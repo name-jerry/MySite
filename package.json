@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@dcloudio/types": "^3.2.11",
+    "mini-types": "^0.1.7",
+    "miniprogram-api-typings": "^3.9.0"
+  }
+}

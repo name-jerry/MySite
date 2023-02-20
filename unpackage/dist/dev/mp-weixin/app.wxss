@@ -1,0 +1,225 @@
+
+  /* semantic color variables for this project */
+page {
+    font-size: 10px;
+    --bg-main: #f7f7f7;
+    --bg-carolina-blue: hsla(199, 89%, 49%, 1);
+    --bg-prussian-blue: hsla(216, 33%, 20%, 1);
+    --bg-oxford-blue: hsla(222, 44%, 13%, 1);
+    --bg-oxford-blue-2: hsla(222, 47%, 11%, 1);
+    --text-white: hsla(0, 0%, 100%, 1);
+    --text-alice-blue: hsla(216, 100%, 95%, 1);
+    --text-columbia-blue: hsla(199, 69%, 84%, 1);
+    --text-wild-blue-yonder: hsla(216, 33%, 68%, 1);
+    --text-carolina-blue: hsla(199, 89%, 49%, 1);
+    --text-shadow-blue: hsla(217, 24%, 59%, 1);
+    --text-slate-gray: hsla(217, 17%, 48%, 1);
+    --gradient-1: linear-gradient(90deg, #0ea6ec, #0bd0d0 51%);
+    --gradient-2: linear-gradient(90deg,
+        hsl(199, 89%, 49%),
+        hsl(180, 90%, 43%) 51%,
+        hsl(199, 89%, 49%));
+    --gradient-3: linear-gradient(0deg, #000d1a, transparent);
+    --border-wild-blue-yonder: hsla(216, 33%, 68%, 1);
+    --border-prussian-blue: hsla(216, 33%, 20%, 1);
+    --border-white: hsl(0, 0%, 100%);
+    --border-white-alpha-15: hsla(0, 0%, 100%, 0.15);
+    --white: hsl(0, 0%, 100%, 1);
+    --black: hsl(0, 0%, 0%, 1);
+    --fontFamily-noto_sans: "Noto Sans", sans-serif;
+    --fontSize-1: 6.4rem;
+    --fontSize-2: 4.5rem;
+    --fontSize-3: 1.8rem;
+    --fontSize-4: 1.6rem;
+    --fontSize-5: 1.5rem;
+    --fontSize-6: 1.4rem;
+    --fontSize-7: 1.2rem;
+    --fontSize-8: 1.3rem;
+    --lineHeight-1: 1.3;
+    --lineHeight-2: 1.5;
+    --lineHeight-4: 1.5;
+    --shadow-1: 0 8px 20px 0 hsla(0, 0%, 0%, 0.05);
+    --shadow-2: 0px 3px 20px hsla(180, 90%, 43%, 0.2);
+    --radius-6: 6px;
+    --radius-8: 8px;
+    --radius-16: 16px;
+    --radius-48: 48px;
+    --radius-pill: 200px;
+    --transition-1: 0.25s ease;
+    --transition-2: 0.5s ease;
+    --cubic-in: cubic-bezier(0.51, 0.03, 0.64, 0.28);
+    --cubic-out: cubic-bezier(0.05, 0.83, 0.52, 0.97);
+}
+page {
+    height: calc(100vh - var(--window-top));
+    /* 兼容 苹果手机 */
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    color: var(--text-shadow-blue);
+    transition: color 0.5s, background-color 0.5s;
+    line-height: 1.5;
+    font-family: var(--fontFamily-noto_sans);
+    font-size: 1.6rem;
+}
+
+  /*  @media (max-width: 1200px){}
+
+  @media (max-width: 992px) {}
+
+  @media (max-width: 768px) {}
+
+  @media (max-width: 575px) {} */
+
+  /*每个页面公共css */
+
+  /* ======================fontIcon============================= */
+@font-face {
+    font-family: "iconfont";
+    src: url("//at.alicdn.com/t/c/font_3837728_b78bbxxxcuj.woff2?t=1674028714831") format("woff2"),
+      url("//at.alicdn.com/t/c/font_3837728_b78bbxxxcuj.woff?t=1674028714831") format("woff"),
+      url("//at.alicdn.com/t/c/font_3837728_b78bbxxxcuj.ttf?t=1674028714831") format("truetype");
+}
+[class*="icon"] {
+    font-family: "iconfont" !important;
+    display: flex;
+    place-items: center;
+    font-size: 1em;
+    width: 1em;
+    height: 1em;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+  /* ============父组件============== */
+#app {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    font-weight: normal;
+}
+
+  /* =======================格式化标签 ======================= */
+img,
+  a,
+  span,
+  button {
+    display: inline-block;
+    color: inherit;
+    font: inherit;
+}
+button {
+    /* 改变下指针的样式 改成手指*/
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+}
+button:hover {
+    outline: none;
+}
+a,
+  label,
+  input[type="radio"] {
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.3s ease;
+}
+
+  /* ===========变化类=============== */
+.logo:hover {
+    filter: brightness(1.7);
+}
+.hover-color,
+  .hover-bg-color,
+  .hover-bg-move {
+    transition: var(--transition-1);
+    cursor: pointer;
+}
+.hover-bg-move {
+    background-size: 200%;
+    background-position: left;
+}
+
+  /* 字体变色 */
+.hover-color:hover {
+    color: var(--text-carolina-blue) !important;
+}
+
+  /* 背景变色 */
+.hover-bg-color:hover {
+    background: var(--gradient-1) !important;
+}
+
+  /* 背景移动 */
+.hover-bg-move:hover {
+    background-position: right;
+}
+
+  /* ===================常用的样式============================ */
+  /* 选择所有class中含有btn字符串的元素 */
+.btn-primary {
+    padding: 8px 16px;
+    border-radius: 6px;
+}
+.btn-secondary {
+    padding: 18px 30px;
+    border-radius: 11px;
+}
+.flex1 {
+    flex: 1;
+}
+.card {
+    background-color: var(--bg-oxford-blue);
+    border: 1px solid var(--border-prussian-blue);
+}
+.lines {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--lines);
+    overflow: hidden;
+}
+
+  /* ====================响应式调整===================== */
+  /* 每个块都设置container类为了在统一调整显示 */
+.container {
+    /* 设置100%未达到最大宽度时显示沾满 */
+    max-width: 1140px;
+    width: 100%;
+    /* 设置块元素的左右居中 */
+    margin: 0 auto;
+    /* 设置当宽度压缩的时候保证内容和边界仍有空间 */
+    padding-right: 16px;
+    padding-left: 16px;
+}
+@media (max-width: 1200px) {
+.container {
+      max-width: 930px;
+}
+}
+
+  /* header变化 */
+@media (max-width: 992px) {
+.container {
+      max-width: 720px;
+}
+}
+@media (max-width: 768px) {
+:root {
+      /* font size */
+      --fontSize-1: 4.4rem;
+}
+.container {
+      max-width: 540px;
+}
+}
+@media (max-width: 575px) {
+:root {
+      --fontSize-1: 2.9rem;
+      --fontSize-2: 2rem;
+}
+.container {
+      padding-left: 10px;
+      padding-right: 10px;
+}
+}
+page{--status-bar-height:25px;--top-window-height:0px;--window-top:0px;--window-bottom:0px;--window-left:0px;--window-right:0px;--window-magin:0px}[data-c-h="true"]{display: none !important;}

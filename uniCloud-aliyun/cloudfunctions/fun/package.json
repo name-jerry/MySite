@@ -1,0 +1,9 @@
+{
+  "name": "fun",
+  "extensions": {
+    "uni-cloud-jql": {}
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1"
+  }
+}
