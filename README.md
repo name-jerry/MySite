@@ -1,6 +1,6 @@
 # MySite
 
-一个简单的首页,用于存储书签以及个人笔记,异地登录,临时办公,能通过该网站快速部署常用工具 [详见](zhangruisite.com).
+一个简单的首页,用于存储书签以及个人笔记,异地登录,临时办公,能通过该网站快速部署常用工具 [详见](https://zhangruisite.com).
    
 灵感来edge首页![edge默认页](README_files/1.png)
 
