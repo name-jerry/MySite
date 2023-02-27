@@ -6,9 +6,9 @@
         class="tools">
         <text>{{toolList[index].label}}</text>
       </picker>
-      <a :href='toolList[index].value+searchWord' class="btn hover-shadow-btn">
+      <navigator :url='toolList[index].value+searchWord' class="btn hover-shadow-btn">
         <text class="icon-search ">&#xe648;</text>
-      </a>
+      </navigator>
     </view>
   </view>
 </template>
@@ -55,8 +55,8 @@
         grid-column: 3;
         width: 100%;
         height: 100%;
-        background-color: var(--color-1);
-        color: var(--text-light);
+        background-color: var(--color-bg-btn);
+        color: white;
         border-radius: 0 var(--height) var(--height) 0;
       }
 

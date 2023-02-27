@@ -1,6 +1,21 @@
 {
   "dependencies": {
     "@dcloudio/types": "^3.2.11",
+    "@kangc/v-md-editor": "^2.3.15",
+    "@vitejs/plugin-vue": "^4.0.0",
+    "github-markdown-css": "^5.2.0",
+    "highlight.js": "^11.7.0",
+    "markdown-it": "^13.0.1",
+    "markdown-it-abbr": "^1.0.4",
+    "markdown-it-anchor": "^8.6.7",
+    "markdown-it-container": "^3.0.0",
+    "markdown-it-emoji": "^2.0.2",
+    "markdown-it-footnote": "^3.0.3",
+    "markdown-it-github": "^0.5.0",
+    "markdown-it-mark": "^3.0.1",
+    "markdown-it-sub": "^1.0.0",
+    "markdown-it-sup": "^1.0.0",
+    "markdown-it-task-lists": "^2.1.1",
     "mini-types": "^0.1.7",
     "miniprogram-api-typings": "^3.9.0"
   }

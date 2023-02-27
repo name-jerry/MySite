@@ -76,12 +76,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-
+    --color-white-1: hsl(207, 45%, 87%);
+    --color-white-2: hsl(207, 45%, 90%);
+    --color-shadow-1: hsl(207, 40%, 68%);
+    --color-shadow-2: hsl(207, 30%, 70%);
   }
 
   .main-wrap,
   .main-box {
-    transition: var(--transition-2);
+    transition: var(--transition-default);
   }
 
   .main-wrap {
@@ -113,7 +116,7 @@
 
   .item-login,
   .item-register {
-    background-color: var(--color-3);
+    background-color: var(--color-bg-quote);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -129,7 +132,7 @@
 
     .btn {
       width: 100%;
-      border-radius: var(--radius-6);
+      border-radius: 6px;
     }
 
   }
@@ -163,7 +166,7 @@
         1px 1px 0px var(--color-white-2),
         inset -3px -3px 6px var(--color-white-1);
       z-index: 1;
-      transition: var(--transition-2);
+      transition: var(--transition-default);
     }
 
     &::after {
@@ -179,7 +182,7 @@
         inset 4px 4px 8px var(--color-shadow-2),
         1px 1px 0px var(--color-white-2),
         inset -3px -3px 6px var(--color-white-1);
-      transition: var(--transition-2);
+      transition: var(--transition-default);
     }
   }
 
@@ -190,7 +193,7 @@
     text-align: center;
 
     .text {
-      border-radius: var(--radius-6)
+      border-radius: 6px
     }
   }
 
@@ -201,7 +204,7 @@
   }
 
   .item-login .show {
-    animation: show .5s var(--cubic-out) forwards;
+    animation: show .5s ease forwards;
   }
 
   .item-register .show {
@@ -231,7 +234,7 @@
         }
 
         .item-register .show {
-          animation: show .5s var(--cubic-out) forwards;
+          animation: show .5s ease forwards;
         }
       }
     }

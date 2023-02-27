@@ -1,7 +1,7 @@
 <template>
   <view class="my-input-wrap" :class="$attrs.class">
     <view class="my-input-box">
-      <input class="my-input" type="safe-password" :password='!show' v-bind='filter($attrs)' />
+      <input class="my-input" type="safe-password" :password='!show' />
     </view>
     <text class="my-icon" v-html="show?'&#xebcc;':'&#xebcd;'" @tap.native.stop="show=!show"></text>
   </view>

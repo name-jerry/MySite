@@ -58,15 +58,15 @@
   .tags-wrap {
     display: grid;
     box-sizing: border-box;
-    grid-template: 68px/ repeat(auto-fit, var(--tag-width));
+    grid-template: 68px/ repeat(auto-fill, 150px);
     grid-auto-rows: 68px;
     justify-content: center;
     position: relative;
     font-size: 15px;
-    border-radius: var(--radius-16);
+    border-radius: 12px;
 
     .tag-box {
-      background-color: var(--color-white);
+      background-color: white;
       cursor: pointer;
     }
 

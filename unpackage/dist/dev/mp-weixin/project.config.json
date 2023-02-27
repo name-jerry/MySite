@@ -18,8 +18,8 @@
         }
     },
     "compileType": "miniprogram",
-    "libVersion": "2.29.0",
-    "appid": "touristappid",
+    "libVersion": "",
+    "appid": "wx6e84825d7e0bbbc8",
     "projectname": "MySite",
     "condition": {},
     "editorSetting": {

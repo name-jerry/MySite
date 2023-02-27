@@ -3,10 +3,8 @@
   import { getClientInfo } from "@/utils/getClientInfo"
   import { initPositionStyle } from "@/utils/initPositionStyle"
   import { cf } from '@/utils/cf'
-  import { format } from "url";
-  import { promises } from "fs";
+
   // 计划表数据获取
-  console.log(!new RegExp(null));
   let self: ComponentInternalInstance = getCurrentInstance()
   let tipList = reactive < Tip[] > ([{
       id: 0,
@@ -184,7 +182,7 @@
   async function test(): Promise < any > {
     // let { result }: { result: unknown } = await cf({ api: 'login', data: { test: 1 } })
     uni.navigateTo({
-      url: '/pages/uni-id-users/add'
+      url: '/pages/Recent/Recent'
     })
   }
 
@@ -205,23 +203,23 @@
     <SearchWrap class='container search-wrap'></SearchWrap>
     <TagsWrap :tagList='tags' class="tags-wrap"></TagsWrap>
     <!-- 固定信息部分 -->
-    <img class="logo" src="@/static/img/logo.svg" @tap='test' />
+    <image class="logo" src="@/static/img/logo.svg" @tap='test' />
     <text url="../login/login.vue" class="set hover-color icon" @tap='showSet=!showSet'>&#xe600;</text>
     <Options v-if="showSet" :options='setOptions' class="set-options" @cancel='showSet=!showSet' @select='setSelect' />
     <MyFooter class="footer container"></MyFooter>
   </view>
 </template>
 
-
+~
 <style lang="scss" scoped>
   .body {
-    height: 100%;
+    height: 100vh;
     display: grid;
     grid-template-rows: 1fr auto auto 1fr;
     gap: 10px;
     place-items: center;
     font-size: 16px;
-
+    overflow: auto;
   }
 
   .module {
@@ -230,22 +228,22 @@
     align-self: end;
     padding-top: 60px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
-    --color-white-1: hsl(199, 70%, 90%);
-    --color-white-2: hsl(199, 70%, 95%);
-    --color-shadow-1: hsl(199, 60%, 70%);
-    --color-shadow-2: hsl(199, 70%, 86%);
+    --color-white-1: hsl(207, 45%, 82%);
+    --color-white-2: hsl(207, 45%, 85%);
+    --color-shadow-1: #7496ab;
+    --color-shadow-2: #a7c6dc;
 
     .memo {
       height: 300px;
       max-height: 300px;
-      background-color: var(--color-3);
-      box-shadow: -4px -4px 8px var(--color-white-1),
+      border-radius: 12px;
+      background-color: var(--color-bg-quote);
+      box-shadow: -1px -1px 2px var(--color-white-1),
         inset 1px 1px 1px var(--color-white-2),
-        6px 6px 12px -2px var(--color-shadow-1),
+        2px 2px 4px var(--color-shadow-1),
         inset -1px -1px 1px var(--color-shadow-2);
-      ;
     }
 
     .login {
@@ -280,6 +278,7 @@
   .logo {
     object-fit: cover;
     height: 30px;
+    width: auto;
     position: absolute;
     left: 30px;
   }
@@ -289,6 +288,7 @@
     right: 30px;
     font-size: var(--fontSize-4);
     width: 30px;
+
 
     &:active {
       transform: scale(.9);

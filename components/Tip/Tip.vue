@@ -10,24 +10,28 @@
     ...tip,
   });
   let isActive = ref < boolean > (false);
+  let updateEnd = ref < boolean > (false)
+
 
   function confirm(tip: Tip): void {
     emit('update', tip)
-    console.log(copy)
     isActive.value = !isActive.value
   }
 
   function check(tip: Tip): void {
-    tip.isEnd = !tip.isEnd
-    emit('update', tip)
+    updateEnd.value = true
+    setTimeout(() => {
+      tip.isEnd = !tip.isEnd
+      emit('update', tip)
+    }, 250)
   }
 </script>
 
 <template>
-  <view class="input-wrap" :class="{ active: isActive, end: copy.isEnd }">
+  <view class="input-wrap" :class="{ end: copy.isEnd,'update-end':updateEnd}">
     <checkbox :disabled="isActive" type="checkbox" class="check" :checked='copy.isEnd' @click="check(copy)" />
     <textarea :disabled="!isActive" auto-height :class="{'hover-shadow-input':isActive}" v-model="copy.title"
-      class="input">不支持富文本</textarea>
+      class="input"></textarea>
     <button class="btn hover-shadow-btn" @click="confirm(copy)">
       {{ !isActive ?"编辑"  : copy.title?"确认":'删除'  }}
     </button>
@@ -35,36 +39,46 @@
 </template>
 
 <style lang="scss" scoped>
+  .input-wrap.update-end {
+    transition: .25s ease;
+    transform: translateX(100%)
+  }
+
+  .input-wrap.update-end.end {
+    transform: translateX(-100%)
+  }
+
   .input-wrap {
     position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: .5em 1em;
+    width: 100%;
+    padding: 8px 16px;
     box-sizing: border-box;
-    border-radius: 8px;
-    transition: var(--transition-1);
-    overflow: hidden;
-
+    border-radius: 6px;
+    transition: var(--transition-default);
+    overflow: auto;
 
     .input {
       display: block;
-      line-height: 1;
+      border-radius: 6px;
+      line-height: 1.5;
+      overflow: auto;
       background: transparent;
       font: inherit;
       color: black;
       text-indent: .5em;
+      width: 0;
       flex: 1;
     }
 
 
     .btn {
-      color: var(--color-white);
-      text-shadow: none;
-      background-color: var(--color-1);
-      border-radius: 4px;
-      line-height: var(--lineHeight-2);
-      padding: 0 .5em;
+      background-color: var(--color-bg-btn);
+      color: white;
+      border-radius: 6px;
+      padding: 3px 8px;
       flex: none;
     }
   }

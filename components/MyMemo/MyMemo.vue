@@ -19,19 +19,19 @@
 
 <template>
   <view class="memo">
-    <h3>备忘路</h3>
+    <text class="h3">备忘路</text>
     <!-- 用于实现切换 -->
     <view class="memo-content" :style="{ transform: move }">
       <!-- 未完成 -->
       <view class="tips-wrap">
-        <template v-for="item in tipList">
-          <Tip class='tip' v-if="!item.isEnd" :key="item.id" :tip="item" @update="tipUpdate"></Tip>
+        <template v-for="item in tipList" :key="item.id">
+          <Tip class='tip' v-if="!item.isEnd" :tip="item" @update="tipUpdate"></Tip>
         </template>
       </view>
       <!-- 已完成 -->
       <view class="tips-wrap">
-        <template v-for="item in tipList">
-          <Tip class='tip' v-if="item.isEnd" :key="item.id" :tip="item" @update="tipUpdate"></Tip>
+        <template v-for="item in tipList" :key="item.id">
+          <Tip class='tip' v-if="item.isEnd" :tip="item" @update="tipUpdate"></Tip>
         </template>
       </view>
     </view>
@@ -53,15 +53,14 @@
     font-size: inherit;
     display: grid;
     grid-template-rows: auto 1fr auto;
+    border-radius: inherit;
+    height: 100%;
     width: 100%;
-    border-radius: var(--radius-16);
-    background-color: initial;
+    background-color: inherit;
     overflow: hidden;
 
-
-    h3 {
-      font-size: var(--fontSize-3);
-      line-height: 2;
+    .h3 {
+      margin: 16px;
       display: grid;
       place-items: center;
     }
@@ -70,20 +69,21 @@
       display: grid;
       width: 200%;
       grid-template-columns: repeat(2, 1fr);
-      transition: var(--transition-1);
+      transition: var(--transition-default);
       overflow: hidden;
 
       .tips-wrap {
-        background-color: var(--color-bg);
+        background-color: var(--color-bg-default);
         width: 100%;
         box-sizing: border-box;
         padding: 10px;
         display: flex;
-        flex-wrap: wrap;
-        justify-content: space-evenly;
-        align-content: flex-start;
+        flex-direction: column;
+        justify-content: flex-start;
         gap: 10px;
         overflow-y: auto;
+        overflow-x: hidden;
+
 
         /* y对应width,x对应height */
         &::-webkit-scrollbar {
@@ -92,22 +92,21 @@
 
         /* 轨道 */
         &::-webkit-scrollbar-track {
-          border-radius: var(--border-radius);
-          box-shadow: var(--shadow-input);
+          box-shadow: var(--shadow-input-focus);
         }
 
         /* 滑块 */
         &::-webkit-scrollbar-thumb {
+          border-radius: 6px;
+          border: 1px solid var(--color-border-default);
           background-color: var(--color-1);
-          border-radius: var(--border-radius);
         }
 
 
         // 等一下
         .tip {
-          background-color: white;
-          flex: 1 1 250px;
           box-shadow: var(--shadow-btn-hover);
+          flex: none;
         }
 
       }
@@ -116,16 +115,17 @@
     // 按钮组
     .group {
       display: grid;
-      gap: 5px;
+      gap: 8px;
       grid-template-columns: repeat(2, 1fr);
       overflow: hidden;
-      padding: 5px;
+      padding: 8px;
+      background-color: inherit;
 
       .btn {
         width: 100%;
         box-shadow: -1px -1px 2px hsl(199, 69%, 100%),
           2px 2px 4px hsl(199, 60%, 60%);
-        border-radius: var(--radius-8);
+        border-radius: 6px;
       }
 
       .btn.active {

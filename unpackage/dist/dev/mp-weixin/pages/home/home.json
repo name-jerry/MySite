@@ -1,3 +1,10 @@
 {
-  "usingComponents": {}
+  "usingComponents": {
+    "my-memo": "../../components/MyMemo/MyMemo",
+    "login": "../../components/Login/Login",
+    "search-wrap": "../../components/SearchWrap/SearchWrap",
+    "tags-wrap": "../../components/TagsWrap/TagsWrap",
+    "options": "../../components/Options/Options",
+    "my-footer": "../../components/MyFooter/MyFooter"
+  }
 }

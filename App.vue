@@ -26,20 +26,37 @@
   };
 </script>
 
-<style>
+<style lang="scss">
   page {
     /* uniapp的html的font-size会随着设备以及宽度的变化而变化,这里设置没用 */
     /* font-size: 10px; */
-    --color-white: rgba(255, 255, 255, 1);
     --color-white-1: rgba(255, 255, 255, .4);
-    --color-white-2: rgba(255, 255, 255, .6);
+    --color-white-2: rgba(255, 255, 255, .7);
     --color-shadow-1: rgba(0, 0, 0, .15);
     --color-shadow-2: rgba(0, 0, 0, .2);
-    --color-bg: hsl(0, 0%, 97%);
-    --color-text-1: hsl(0, 0%, 0%);
-    --color-1: hsl(199, 50%, 54%);
-    --color-2: hsl(199, 30%, 40%);
-    --color-3: hsl(199, 70%, 84%);
+    --color-1: hsl(207, 45%, 65%);
+    --color-2: hsl(206, 100%, 42%);
+    --color-3: hsl(207, 45%, 80%);
+    --color-4: #3A4856;
+    --color-5: #E6F4F1;
+    --color-border-default: hsl(207, 30%, 80%);
+    --color-a-default: var(--color-2);
+    --color-font-default: var(--color-4);
+    --color-font-title: var(--color-font-default);
+    --color-bg-default: hsl(0 0% 97%);
+    --color-bg-btn: var(--color-2);
+    --color-bg-quote: var(--color-3);
+    --color-bg-code: var(--color-3);
+    --color-bg-pre: var(--color-3);
+    --color-bg-hr: var(--color-5);
+    --borderRadius-default: 6px;
+    --padding-default: calc(var(--fontSize-default) / 2);
+    --lineHeight-default: 1.5;
+    --transition-default: 0.25s ease;
+    --fontSize-default: 16px;
+    --fontSize-1: calc(var(--fontSize-default) * 2);
+    --fontSize-2: calc(var(--fontSize-default) * 1.5);
+    --fontSize-3: calc(var(--fontSize-default) * 1.25);
     --shadow-btn: -4px -4px 8px var(--color-white-1),
       inset 1px 1px 1px var(--color-white-2),
       6px 6px 12px -2px var(--color-shadow-1),
@@ -60,7 +77,7 @@
       inset 4px 4px 2px -2px var(--color-shadow-2),
       1px 1px 0px var(--color-white-2),
       inset -1px -1px 2px var(--color-white-1);
-    --gradient-light: linear-gradient(135deg, hsl(0, 0, 100%), hsl(0, 0, 80%));
+    --gradient-light: linear-gradient(135deg, hsla(0, 0%, 100%, .3), hsla(0, 0%, 100%, .2));
     --gradient-1: linear-gradient(90deg,
         var(--color-1),
         var(--color-2) 51%);
@@ -68,22 +85,6 @@
         var(--color-1),
         var(--color-3) 51%,
         var(--color-1));
-    --fontSize-1: 1.5em;
-    --fontSize-2: 1.4em;
-    --fontSize-3: 1.3em;
-    --fontSize-4: 1.2em;
-    --fontSize-5: 0.8em;
-    --lineHeight-1: 1.5;
-    --lineHeight-2: 2;
-    --radius-4: 4px;
-    --radius-6: 6px;
-    --radius-8: 8px;
-    --radius-16: 16px;
-    --radius-48: 48px;
-    --transition-1: 0.25s ease;
-    --transition-2: 0.5s ease;
-    --cubic-in: cubic-bezier(0.51, 0.03, 0.64, 0.28);
-    --cubic-out: cubic-bezier(0.05, 0.83, 0.52, 0.97);
   }
 
 
@@ -102,9 +103,9 @@
   @font-face {
     font-family: 'iconfont';
     /* Project id 3837728 */
-    src: url('//at.alicdn.com/t/c/font_3837728_brhs46ql054.woff2?t=1676335857174') format('woff2'),
-      url('//at.alicdn.com/t/c/font_3837728_brhs46ql054.woff?t=1676335857174') format('woff'),
-      url('//at.alicdn.com/t/c/font_3837728_brhs46ql054.ttf?t=1676335857174') format('truetype');
+    src: url('//at.alicdn.com/t/c/font_3837728_mb67r2eyyze.woff2?t=1677144398159') format('woff2'),
+      url('//at.alicdn.com/t/c/font_3837728_mb67r2eyyze.woff?t=1677144398159') format('woff'),
+      url('//at.alicdn.com/t/c/font_3837728_mb67r2eyyze.ttf?t=1677144398159') format('truetype');
   }
 
   [class*="icon"] {
@@ -126,13 +127,11 @@
     min-height: calc(100vh - var(--window-top));
     /* 兼容 苹果手机 */
     min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-    height: 100%;
-    color: var(--color-text);
-    text-shadow: 1px 1px 1px var(--color-white-1);
+    color: var(--color-font-default);
     font-family: Tahoma, Verdana, sans-serif, kaiti, Times, serif;
-    font-size: var(--fontSize-3);
-    line-height: var(--lineHeight-1);
-    background-color: var(--color-bg);
+    font-size: var(--fontSize-default);
+    line-height: var(--lineHeight-default);
+    background-color: var(--color-bg-default);
   }
 
   #app {
@@ -160,12 +159,59 @@
     padding: 0;
   }
 
+  /*  =================标题============== */
+  .h1,
+  .h2,
+  .h3,
+  .h4,
+  .h5,
+  .h6 {
+    display: block;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: var(--fontSize-2) 0 var(--fontSize-default);
+    color: var(--color-font-title);
+  }
+
+  .h1,
+  .h2 {
+    border-bottom: 1px solid hsla(210, 18%, 87%, 1);
+    padding-bottom: .25em;
+  }
+
+  .h1 {
+    font-size: var(--fontSize-1);
+    font-weight: 800;
+  }
+
+  .h2 {
+    font-size: var(--fontSize-2);
+    padding-left: .25em;
+    border-left: .25em solid var(--color-border-default);
+  }
+
+  .h3 {
+    font-size: var(--fontSize-3);
+  }
+
+  .h4 {
+    text-transform: uppercase;
+  }
+
+  .h5 {
+    text-transform: uppercase;
+  }
+
+  .h6 {
+    color: #AAA;
+  }
+
   /* uniapp格式化button */
   .btn {
     padding: 0;
     font: unset;
     color: unset;
-    line-height: var(--lineHeight-1);
+    line-height: var(--lineHeight-default);
     border: none;
     border-radius: initial;
     background-color: unset;
@@ -188,31 +234,26 @@
   input[type="radio"] {
     cursor: pointer;
     text-decoration: none;
-    transition: var(--transition-1);
+    transition: var(--transition-default);
   }
 
   /* ===========交互=============== */
   .logo {
     aspect-ratio: 1190 / 340;
-    transition: var(--transition-1);
+    transition: var(--transition-default);
     cursor: pointer;
   }
 
   .logo:hover {
-    filter: brightness(1.2);
+    filter: brightness(1.1);
   }
 
   .hover-color,
   .hover-bg-color,
   .hover-bg-move,
   .hover-shadow-btn {
-    transition: var(--transition-1);
+    transition: var(--transition-default);
     cursor: pointer;
-  }
-
-  .hover-shadow-btn,
-  .hover-shadow-input {
-    transition: var(--transition-1);
   }
 
   .hover-shadow-btn {
@@ -220,7 +261,12 @@
   }
 
   .hover-shadow-input {
+    transition: var(--transition-default);
     box-shadow: var(--shadow-input);
+  }
+
+  .hover-bg-color {
+    padding: .2em .5em;
   }
 
   .hover-bg-move {
@@ -230,7 +276,7 @@
 
   /* 字体变色 */
   .hover-color:hover {
-    color: var(--color-2)
+    filter: brightness(.9);
   }
 
   /* 背景变色 */
@@ -256,16 +302,6 @@
   }
 
   /* ===================常用的样式============================ */
-  .btn-primary {
-    padding: 8px 16px;
-    border-radius: 6px;
-  }
-
-  .btn-secondary {
-    padding: 18px 30px;
-    border-radius: 11px;
-  }
-
   .flex1 {
     flex: 1;
   }
@@ -329,6 +365,7 @@
       padding-left: 10px;
       padding-right: 10px;
       max-width: 100%;
+
     }
   }
 </style>

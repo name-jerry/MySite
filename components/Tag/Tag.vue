@@ -67,18 +67,18 @@
 </script>
 <template>
   <view class="tag-box" :class="{'show-options':isShowOptions,'show-children':isShowChildren}" @tap="Toggle">
-    <a :href="tag.href && !tag.children ? tag.href : 'javascript:void(0)'"
+    <navigator :url="tag.href && !tag.children ? tag.href : 'javascript:void(0)'"
       :target="tag.href && !tag.children ? '_blank' : ''" class="card tag">
       <view class="text-content">
-        <img v-if="tag.src" :src="tag.src" alt="" />
-        <p v-if="tag.title" class="lines" style="--lines: 2">{{ tag.title }}</p>
+        <image v-if="tag.src" :src="tag.src" alt="" class="img"></image>
+        <text v-if="tag.title" class="lines" style="--lines: 2">{{ tag.title }}</text>
         <slot></slot>
       </view>
       <!-- hover时提示用的 -->
       <view class="sub-content" ref="sub" v-if="tag.sub">
         {{ tag.sub }}
       </view>
-    </a>
+    </navigator>
     <!-- 有子类时渲染子类,js重置显示位置 -->
     <template v-if="tag?.children&&tag.children.length>0">
       <view class="children-wrap" ref="children" :style="childrenStyle">
@@ -103,8 +103,8 @@
     cursor: pointer;
     z-index: 1;
     position: relative;
-    border-radius: inherit;
     width: 100%;
+    border-radius: inherit;
 
     &:hover {
       z-index: 2;
@@ -119,6 +119,11 @@
     display: block;
   }
 
+  .navigator-wrap {
+    width: 100%;
+    border-radius: inherit;
+  }
+
   .tag {
     width: 100%;
     height: 100%;
@@ -128,6 +133,7 @@
     box-sizing: border-box;
     background-color: white;
     border-radius: inherit;
+    overflow: hidden;
 
     .text-content {
       display: flex;
@@ -140,7 +146,7 @@
       min-height: 68px;
     }
 
-    img {
+    .img {
       width: 32px;
       height: 32px;
     }
@@ -157,7 +163,6 @@
     color: black;
     width: max-content;
     word-wrap: break-word;
-    border-radius: inherit;
     padding: 16px;
     font-family: kaiti, Times, serif;
 
@@ -285,6 +290,6 @@
     top: 0;
     left: 0;
     z-index: 2;
-    background-color: rgb(0, 0, 0, .4);
+    background-color: rgb(0, 0, 0, .1);
   }
 </style>
