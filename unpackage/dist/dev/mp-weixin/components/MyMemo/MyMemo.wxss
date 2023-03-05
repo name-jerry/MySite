@@ -1,0 +1,71 @@
+.memo.data-v-eaead644 {
+  font-size: inherit;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  border-radius: inherit;
+  height: 100%;
+  width: 100%;
+  background-color: inherit;
+  overflow: hidden;
+}
+.memo .h3.data-v-eaead644 {
+  font-size: var(--fontSize-3);
+  line-height: 2;
+  display: grid;
+  place-items: center;
+}
+.memo .memo-content.data-v-eaead644 {
+  display: grid;
+  width: 200%;
+  grid-template-columns: repeat(2, 1fr);
+  transition: var(--transition-1);
+  overflow: hidden;
+}
+.memo .memo-content .tips-wrap.data-v-eaead644 {
+  background-color: var(--color-bg);
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-content: flex-start;
+  gap: 10px;
+  overflow-y: auto;
+  /* y对应width,x对应height */
+  /* 轨道 */
+  /* 滑块 */
+}
+.memo .memo-content .tips-wrap.data-v-eaead644::-webkit-scrollbar {
+  width: 10px;
+}
+.memo .memo-content .tips-wrap.data-v-eaead644::-webkit-scrollbar-track {
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-input);
+}
+.memo .memo-content .tips-wrap.data-v-eaead644::-webkit-scrollbar-thumb {
+  background-color: var(--color-1);
+  border-radius: var(--border-radius);
+}
+.memo .memo-content .tips-wrap .tip.data-v-eaead644 {
+  background-color: white;
+  width: 0;
+  flex: 1 1 200px;
+  box-shadow: var(--shadow-btn-hover);
+}
+.memo .group.data-v-eaead644 {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(2, 1fr);
+  overflow: hidden;
+  padding: 5px;
+  background-color: inherit;
+}
+.memo .group .btn.data-v-eaead644 {
+  width: 100%;
+  box-shadow: -1px -1px 2px white, 2px 2px 4px #5cafd6;
+  border-radius: var(--radius-8);
+}
+.memo .group .btn.active.data-v-eaead644 {
+  box-shadow: inset 2px 2px 4px #5cafd6, inset -1px -1px 1px white;
+}
