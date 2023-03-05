@@ -1,196 +1,106 @@
 <script setup lang="ts">
   import { ref, reactive, onMounted, onUnmounted, ComponentInternalInstance, getCurrentInstance, nextTick } from "vue";
+  import { onLoad } from '@dcloudio/uni-app';
   import { getClientInfo } from "@/utils/getClientInfo"
   import { initPositionStyle } from "@/utils/initPositionStyle"
   import { cf } from '@/utils/cf'
-
+  import getMds from '@/tools/getMds';
+  import type { Tip, Tag, Option } from '@/type'
+  // 跳转时带的参数
+  type Query = {
+    needLogin ?: Boolean
+    uniIdRedirectUrl ?: String
+  }
+  let query : Query;
   // 计划表数据获取
-  let self: ComponentInternalInstance = getCurrentInstance()
-  let tipList = reactive < Tip[] > ([{
-      id: 0,
-      title: "完成一个计划表",
-      createTime: Date.now(),
-      isEnd: false,
-      endTime: "",
-    },
-    {
-      id: 1,
-      title: "完成一个计划表",
-      createTime: Date.now(),
-      isEnd: true,
-      endTime: "",
-    },
-    {
-      id: 2,
-      title: "完成一个计划表",
-      createTime: Date.now(),
-      isEnd: true,
-      endTime: "",
-    },
-    {
-      id: 3,
-      title: "完成一个计划表",
-      createTime: Date.now(),
-      isEnd: true,
-      endTime: "",
-    },
-    {
-      id: 4,
-      title: "完成一个计划表",
-      createTime: Date.now(),
-      isEnd: true,
-      endTime: "",
-    },
-    {
-      id: 5,
-      title: "完成一个计划表",
-      createTime: Date.now(),
-      isEnd: true,
-      endTime: "",
-    },
-    {
-      id: 6,
-      title: "完成一个计划表",
-      createTime: Date.now(),
-      isEnd: true,
-      endTime: "",
-    },
+  let self : ComponentInternalInstance = getCurrentInstance()
+  let tipList = reactive<Tip[]>([{
+    id: 0,
+    title: "完成一个计划表",
+    createTime: Date.now(),
+    isEnd: false,
+    endTime: "",
+  }
   ]);
   // ============tags-wrap===========
-  let tags = reactive < Tag[] > (
-    [{
-      src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-      title: "资源",
-      sub: "常用的素材",
-      children: [{
-        src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-        title: "子1",
-        sub: "常用的素材",
-        children: [{
-          src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-          title: "子1",
-          sub: "常用的素材",
-          children: []
-        }, {
-          src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-          title: "子2",
-          sub: "常用的素材",
-          children: [{
-            src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-            title: "子1",
-            sub: "常用的素材",
-            children: []
-          }, {
-            src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-            title: "子2",
-            sub: "常用的素材",
-            children: [{
-              src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-              title: "子1",
-              sub: "常用的素材",
-              children: []
-            }, {
-              src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-              title: "子2",
-              sub: "常用的素材",
-              children: []
-            }]
-          }]
-        }]
-      }, {
-        src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-        title: "子2",
-        sub: "常用的素材",
-        children: []
-      }]
-    }, {
-      src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-      title: "资源",
-      sub: "常用的素材",
-      children: [{
-        src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-        title: "子1",
-        sub: "常用的素材",
-        children: []
-      }, {
-        src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-        title: "子2",
-        sub: "常用的素材",
-        children: []
-      }]
-    }, {
-      src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-      title: "子2",
-      sub: "常用的素材",
-      children: []
-    }, {
-      src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-      title: "子2",
-      sub: "常用的素材",
-      children: []
-    }, {
-      src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-      title: "子2",
-      sub: "常用的素材",
-      children: []
-    }, {
-      src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-      title: "子2",
-      sub: "常用的素材",
-      children: []
-    }, {
-      src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-      title: "子2",
-      sub: "常用的素材",
-      children: []
-    }, {
-      src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-      title: "子2",
-      sub: "常用的素材",
-      children: []
-    }, {
-      src: "https://scpic.chinaz.net/files/pic/pic9/202009/apic27858.jpg",
-      title: "子2",
-      sub: "常用的素材",
-      children: []
-    }]
-  )
+  let tags = reactive<Tag[]>([])
   // 设置
-  let setOptions = reactive < Option[] > ([{
-      fontIcon: '&#xe603;',
-      title: '登录'
-    },
-    {
-      fontIcon: '&#xe97f;',
-      title: '退出'
-    }
+  let setOptions = reactive<Option[]>([{
+    fontIcon: '&#xe603;',
+    title: '登录'
+  },
+  {
+    fontIcon: '&#xe97f;',
+    title: '退出'
+  }
   ])
-  let showSet = ref < boolean > (false)
+  let showSet = ref<boolean>(false)
   // 插入模块
   // login
-  let showLogin = ref < boolean > (false);
+  let showLogin = ref<boolean>(false);
 
-  function setSelect(option: Option): void {
+  function setSelect(option : Option) : void {
     showSet.value = false;
     let t = option.title;
-    if (t == '登录') {
-      showLogin.value = true
-    }
+    let funs = new Map()
+    funs.set('登录', () => { showLogin.value = true })
+    funs.set('退出', () => {
+      try {
+        uni.setStorageSync('uni_id_token', '')
+      } catch (e) {
+        uni.showToast({
+          title: e.message,
+          icon: 'error'
+        })
+      }
+    })
+    !funs.has(t) ? funs.get(t)() : uni.showToast({
+      title: '该功能未设置'
+    });
   }
   // ===========ajax===============
+  function login(e : boolean) {
+    if (e) {
+      if (query && query.uniIdRedirectUrl) {
+        setTimeout(() => uni.showToast({
+          title: '返回之前访问页面',
+        }), 1000)
+        setTimeout(() => {
+          showLogin.value = false;
+          uni.redirectTo({
+            url: query.uniIdRedirectUrl
+          })
+        }, 2000)
 
-  async function test(): Promise < any > {
-    // let { result }: { result: unknown } = await cf({ api: 'login', data: { test: 1 } })
-    uni.navigateTo({
-      url: '/pages/Recent/Recent'
+      }
+
+    }
+  }
+  async function getTags() {
+    let names = await getMds()
+    names.map((n : string, i : number) => {
+      tags.push({
+        id: '' + i,
+        src: '',
+        href: '/pages/Article/Article?value=' + n,
+        title: n.replace('.md', ''),
+        sub: n.replace('.md', '')
+      })
     })
   }
-
+  getTags()
+  // 需要登录时
+  onLoad((q : Query) => {
+    if (q.needLogin) {
+      showLogin.value = true
+      query = q
+    }
+  }
+  )
   // =========挂载卸载============
   onMounted(() => {
-
   })
-  onUnmounted(() => {})
+  onUnmounted(() => { })
 </script>
 <template>
   <view class="body">
@@ -198,14 +108,15 @@
     <view class="module container">
       <!-- <ShowMessage class="show-message" /> -->
       <MyMemo :tipList='tipList' class="memo"></MyMemo>
-      <Login class="login" v-if="showLogin"></Login>
+      <Login class="login" v-if="showLogin" @login='login'></Login>
     </view>
     <SearchWrap class='container search-wrap'></SearchWrap>
     <TagsWrap :tagList='tags' class="tags-wrap"></TagsWrap>
     <!-- 固定信息部分 -->
-    <image class="logo" src="@/static/img/logo.svg" @tap='test' />
+    <image class="logo" src="@/static/img/logo.svg" />
     <text url="../login/login.vue" class="set hover-color icon" @tap='showSet=!showSet'>&#xe600;</text>
-    <Options v-if="showSet" :options='setOptions' class="set-options" @cancel='showSet=!showSet' @select='setSelect' />
+    <Options v-if="showSet" :options='setOptions' :showMask='true' class="set-options" @cancel='showSet=!showSet'
+      @select='setSelect' />
     <MyFooter class="footer container"></MyFooter>
   </view>
 </template>
@@ -220,6 +131,7 @@
     place-items: center;
     font-size: 16px;
     overflow: auto;
+    position: relative;
   }
 
   .module {
@@ -275,19 +187,24 @@
     transition: var(--transition-1);
   }
 
+  .logo,
+  .set {
+    height: 30px;
+  }
+
   .logo {
     object-fit: cover;
-    height: 30px;
     width: auto;
     position: absolute;
+
     left: 30px;
   }
 
   .set {
     position: absolute;
     right: 30px;
-    font-size: var(--fontSize-4);
-    width: 30px;
+    margin-right: 10px;
+    font-size: var(--fontSize-default);
 
 
     &:active {
@@ -298,8 +215,8 @@
   .set-options {
     position: absolute;
     right: 60px;
-    font-size: var(--fontSize-5);
-    background-color: var(--color-white);
+    font-size: 14px;
+    background-color: white;
     z-index: 9;
 
   }

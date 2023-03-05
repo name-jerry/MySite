@@ -3,6 +3,7 @@
     "@dcloudio/types": "^3.2.11",
     "@kangc/v-md-editor": "^2.3.15",
     "@vitejs/plugin-vue": "^4.0.0",
+    "crypto-js": "^4.1.1",
     "github-markdown-css": "^5.2.0",
     "highlight.js": "^11.7.0",
     "markdown-it": "^13.0.1",

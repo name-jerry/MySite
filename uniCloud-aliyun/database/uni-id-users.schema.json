@@ -1,8 +1,14 @@
 {
   "bsonType": "object",
   "required": [
-    "username", "password"
+    "username", "password", "role"
   ],
+  "permission": {
+    "read": "doc._id==auth.uid",
+    "update": "doc._id==auth.uid",
+    "count": true
+
+  },
   "properties": {
     "_id": { "description": "存储文档 ID（用户 ID），系统自动生成" },
     "username": { "bsonType": "string", "title": "用户名", "description": "用户名，不允许重复", "trim": "both" },
@@ -55,7 +61,17 @@
     "avatar_file": { "bsonType": "file", "title": "头像文件", "description": "用file类型方便使用uni-file-picker组件" },
     "d_ids": { "bsonType": "array", "description": "部门ID", "title": "部门", "foreignKey": "opendb-department._id", "enumType": "tree", "enum": { "collection": "opendb-department", "orderby": "name asc", "field": "_id as value, name as text" } },
     "e_ids": { "bsonType": "array", "description": "企业ID", "title": "企业" },
-    "role": { "bsonType": "array", "title": "角色", "description": "用户角色", "enum": { "collection": "uni-id-roles", "field": "role_id as value, role_name as text" }, "foreignKey": "uni-id-roles.role_id", "permission": { "write": false } },
+    "role": {
+      "bsonType": "array",
+      "title": "角色",
+      "description": "用户角色",
+      "enum": {
+        "collection": "uni-id-roles",
+        "field": "role_id as value, role_name as text"
+      },
+      "foreignKey": "uni-id-roles.role_id",
+      "permission": { "write": false }
+    },
     "wx_unionid": { "bsonType": "string", "description": "微信unionid" },
     "wx_openid": { "bsonType": "object", "description": "微信各个平台openid", "properties": { "app": { "bsonType": "string", "description": "app平台微信openid" }, "mp": { "bsonType": "string", "description": "微信小程序平台openid" }, "h5": { "bsonType": "string", "description": "微信公众号平台openid" }, "web": { "bsonType": "string", "description": "微信网页登录openid" } } },
     "ali_openid": { "bsonType": "string", "description": "支付宝平台openid" },

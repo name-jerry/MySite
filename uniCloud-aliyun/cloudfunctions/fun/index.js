@@ -1,84 +1,51 @@
 'use strict';
-const db = uniCloud.database({ throwOnNotFound: false });
-const jwt = require('jsonwebtoken');
-const appId = 'wx360e08849e58a6ac';
-const appSecret = 'c4856680bee609f6c6673f24372d55ae';
-const jwtSecret = '测试用';
-async function publish(event, auth) {
-  delete event.data.token;
-  let res = await db.collection('messageList').add({
-    ...event.data,
-    openId: auth.openId,
-    publish: false
-  });
-  if (!res) throw new Error('添加失败')
-}
-async function getMessageList(event) {
-  let res = await db.collection('messageList').get();
-  return res.data
-}
-async function getMyMessageList(event, auth) {
-  let res = await db.collection('messageList').where({ openId: auth.openId }).get();
-  return res.data
-}
+const uniID = require('uni-id-common')
+// 导入apis下所有函数名
+let fs = require('fs')
+let path = require('path')
+let p = path.join(__dirname + '/apis')
+let apis = fs.readdirSync(p);
+let funs = new Map()
+// 加载模块
+apis.map(item => {
+  let type = item.replace('.js', '')
+  funs.set(type, require('./apis/' + item))
+})
 
-async function login(event) {
-  let res = await uniCloud.httpclient.request(
-    `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${appSecret}&js_code=${event.data}&grant_type=authorization_code`, { dataType: 'json' }
-
-  )
-  let openId = res.data.openid;
-  if (!openId) throw new Error('获取失败');
-  let user = await db.collection('userList').doc(openId).get();
-  let token = 'Bearer' + jwt.sign({ openId, ...user.data[0] }, jwtSecret);
-  if (user.data[0]) {
+exports.main = async (event, context) => {
+  //配置uni-id-common用于管理token
+  const { type } = event
+  const uniIDIns = uniID.createInstance({
+    context
+  })
+  let { errCode, errMsg, uid, token, role, permission } = await uniIDIns.checkToken(event.token)
+  // 非登录注册请求,token出错都终止
+  if (errCode && type != 'login' && type != 'register') {
     return {
-      user: user.data[0],
-      token
-    }
-  } else {
-    let newUser = {
-      _id: openId,
-      createdAt: Date.now()
-    }
-    await db.collection('userList').add(newUser)
-    return {
-      user: newUser,
-      token
+      success: false,
+      errCode,
+      errMsg,
     }
   }
-}
-
-async function updateUser(event, auth) {
-  let user = event.data.user
-  delete user._id
-  return await db.collection('userList').doc(auth.openId).update({
-    ...user
-  });
-}
-const apis = new Map([
-  ['publish', publish],
-  ['getMessageList', getMessageList],
-  ['login', login],
-  ['getMyMessageList', getMyMessageList],
-  ['updateUser', updateUser],
-])
-exports.main = async (event, context) => {
-  try {
-    let auth;
-    if (event.api != 'login') {
-      if (!event.data.token) {
-        throw new Error('请先登录')
-      } else {
-        auth = jwt.verify(event.data.token.replace('Bearer', ''), jwtSecret)
-
+  // 获取JQL数据库操作对象
+  const dbJQL = uniCloud.databaseForJQL({ event, context });
+  if (funs.has(type)) {
+    try {
+      // 传入原有的两个属性,dbJQL操作对象,token中含有的角色信息,uni-id-common模块
+      let res = await funs.get(type)(event, context, dbJQL, { uid, role, permission }, uniIDIns)
+      // 此处利用用展开符的特性,遇到登录接口等返回的res中含有token属性将覆盖此处的token
+      return { success: true, errCode: 0, token, ...res }
+    } catch (e) {
+      return {
+        success: false,
+        errCode: e.message,
+        errMsg: e.message,
       }
     }
-
-    let data = await apis.get(event.api)(event, auth);
-    return { success: true, data }
-  } catch (error) {
-    return { success: false, errorMessage: error.message }
   }
-
+  return {
+    success: false,
+    errCode: '无此api',
+    errMsg: '无此api',
+  }
 };

@@ -1,6 +1,7 @@
 <script lang="ts">
   export default {
-    onLaunch: function() {
+    onLaunch: function () {
+      console.log("App onLaunch");
       // #ifndef H5 || APP-PLUS
       let updateManager = uni.getUpdateManager();
       updateManager.onCheckForUpdate(res => {
@@ -17,10 +18,25 @@
       });
       // #endif
     },
-    onShow: function() {
+
+    onShow: function () {
       console.log("App Show");
+      // 注册登录事件
+      uniCloud.onNeedLogin(event => {
+        let { uid, role, permission, tokenExpired } = uniCloud.getCurrentUserInfo()
+        if (!tokenExpired || tokenExpired < Date.now()) {
+          uni.navigateTo({
+            url: "/pages/Home/Home?needLogin=true&uniIdRedirectUrl=" + event.uniIdRedirectUrl
+          })
+          uni.showToast({
+            title: "请登录",
+            icon: "none"
+          })
+        }
+
+      })
     },
-    onHide: function() {
+    onHide: function () {
       console.log("App Hide");
     },
   };
@@ -110,7 +126,7 @@
 
   [class*="icon"] {
     font-family: "iconfont" !important;
-    display: flex;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     font-size: 1em;
@@ -340,7 +356,9 @@
   /* header变化 */
   @media (max-width: 992px) {
     .container {
-      max-width: 720px;
+      max-width: 100%;
+      padding-right: 0px;
+      padding-left: 0px;
     }
   }
 
@@ -350,9 +368,7 @@
       --fontSize-1: 4.4rem;
     }
 
-    .container {
-      max-width: 540px;
-    }
+
   }
 
   @media (max-width: 575px) {
@@ -364,7 +380,6 @@
     .container {
       padding-left: 10px;
       padding-right: 10px;
-      max-width: 100%;
 
     }
   }

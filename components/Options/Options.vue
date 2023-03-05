@@ -1,18 +1,18 @@
 <template>
   <view class="options-wrap">
-    <template v-for="item in options" :key="item.title">
+    <template v-for="item in props.options" :key="item">
       <view class="option" @tap="$emit('select',item)">
         <text v-if='item.fontIcon' class="icon" v-html="item.fontIcon"></text>
-        <text class="item-title">{{item.title}}</text>
+        <text class="item-title">{{item.title?item.title:item}}</text>
       </view>
     </template>
-    <Mask @tap.native.stop="$emit('cancel')"></Mask>
+    <Mask v-if='props.showMask' @tap.native.stop="$emit('cancel')"></Mask>
   </view>
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, onMounted, onUnmounted } from "vue";
-  let { options } = defineProps < { options: Option[] } > ();
+  import type { Option } from '@/type'
+  let props = withDefaults(defineProps<{ options : Option[], showMask : boolean }>(), { options: () => [], showMask: true })
 </script>
 
 <style scoped lang="scss">
@@ -36,6 +36,7 @@
       padding-left: .5em;
       padding-right: .5em;
       line-height: var(--lineHeight-2);
+      border: 1px solid hsl(0, 0%, 80%);
       box-shadow: 0px 1px 0px hsl(0, 0%, 80%);
       z-index: 2;
       cursor: pointer;
@@ -44,6 +45,10 @@
       .item-title,
       .icon {
         pointer-events: none;
+      }
+
+      &:hover {
+        box-shadow: var(--shadow-btn-active);
       }
 
       &:active {

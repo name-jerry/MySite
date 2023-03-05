@@ -1,1 +1,0 @@
-module.exports=["login.js","test12.js"]

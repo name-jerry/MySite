@@ -3,7 +3,8 @@
     <view class="main-wrap">
       <view class="main-box">
         <view class="item-login">
-          <input class="show input hover-shadow-input" type="text" placeholder="账号" v-model="form.acc" />
+          <input class="show input hover-shadow-input" autocomplete='off' type="text" placeholder="账号"
+            v-model="form.acc" />
           <PasswordInput class="show input hover-shadow-input" placeholder='输入密码' v-model="form.pwd1" />
           <view class="show btn hover-shadow-btn" @tap="loginBtn">登录</view>
         </view>
@@ -25,35 +26,48 @@
 </template>
 
 <script setup lang="ts">
+  import { SHA1 } from 'crypto-js';
   import { ref, reactive, onMounted, onUnmounted } from "vue";
-  let isRegister = ref < boolean > (false)
+  import cf from '@/utils/cf'
+  // console.log(SHA1('j3jj').toString());
+  //052891722d47b7c8aac0f07dc08f4f94d36f70d0
+  type Emit = { (event : 'login', success : Boolean) : void }
+  let emit = defineEmits<Emit>()
+  let isRegister = ref<boolean>(false)
   type Form = {
-    acc: string,
-    pwd1: string,
-    pwd2 ? : string
+    acc : string,
+    pwd1 : string,
+    pwd2 ?: string
   }
-  let form = reactive < Form > ({
+  let form = reactive<Form>({
     acc: '',
     pwd1: '',
     pwd2: '',
   })
 
-  function loginBtn(e) {
-    console.log(form);
-    if (form.acc || form.pwd1) {
-      uni.showToast({
+  async function loginBtn(e) {
+    if (!form.acc || !form.pwd1) {
+      return uni.showToast({
         title: ' 请输入信息',
+        icon: 'none'
       })
+    }
+
+    let res = await cf({ type: 'login', acc: form.acc, pwd: form.pwd1 })
+    if (res.success) {
+      uni.showToast({
+        title: '登录成功',
+      })
+      emit('login', true)
     }
   }
 
-  function registerBtn(e) {
-    console.log(form);
-    if (form.acc || form.pwd1) {
-      uni.showToast({
-        title: '请输入信息'
-      })
-    } else if (form.pwd1 !== form.pwd2) { uni.showToast({ title: '密码不一致' }) }
+  async function registerBtn(e) {
+    if (!form.acc || !form.pwd1) return uni.showToast({ title: '请输入信息' });
+    if (form.pwd1 !== form.pwd2) return uni.showToast({ title: '密码不一致' });
+    let pwd = SHA1(form.pwd1)
+    let { success, errMsg } = await cf({ type: 'register', acc: form.acc, pwd })
+
   }
 
   function clearForm() {
@@ -62,9 +76,8 @@
     form.pwd2 = '';
   }
 
-  function pwdBlur(value: string) { console.log(value); }
+  function pwdBlur(value : string) { console.log(value); }
   onMounted(() => {
-
   })
 </script>
 
@@ -81,6 +94,7 @@
     --color-shadow-1: hsl(207, 40%, 68%);
     --color-shadow-2: hsl(207, 30%, 70%);
   }
+
 
   .main-wrap,
   .main-box {

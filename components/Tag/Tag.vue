@@ -1,27 +1,28 @@
 <script setup lang="ts">
   import { onMounted, getCurrentInstance, ComponentInternalInstance, onUnmounted, reactive, ref } from "vue";
   import { getClientInfo, ClientInfo } from "@/utils/getClientInfo"
+  import type { Tag } from '@/type'
 
-  let { tag } = defineProps < { tag: Tag } > ();
-  let self: ComponentInternalInstance = getCurrentInstance() as ComponentInternalInstance
-  let childrenStyle: any = reactive({});
+  let { tag } = defineProps<{ tag : Tag }>();
+  let self : ComponentInternalInstance = getCurrentInstance() as ComponentInternalInstance
+  let childrenStyle : any = reactive({});
   // 兼容移动端
-  let isShowChildren = ref < boolean > (false)
-  let isShowShadow = ref < boolean > (false)
-  let isShowOptions = ref < boolean > (false)
+  let isShowChildren = ref<boolean>(false)
+  let isShowShadow = ref<boolean>(false)
+  let isShowOptions = ref<boolean>(false)
   // tag-box位置信息
-  let data: ClientInfo;
-  const emit = defineEmits < {
-    (e: 'dot', data: Tag)
-  } > ()
+  let data : ClientInfo;
+  const emit = defineEmits<{
+    (e : 'dot', data : Tag)
+  }>()
 
-  function tapDot(): void {
+  function tapDot() : void {
     isShowOptions.value = true
     isShowShadow.value = true
     isShowChildren.value = false
   }
   // 兼容移动端
-  function Toggle(e: CustomEvent) {
+  function Toggle(e : CustomEvent) {
     let isShadow = (e.target as any).dataset?.shadow;
     if (isShadow) {
       isShowChildren.value = false

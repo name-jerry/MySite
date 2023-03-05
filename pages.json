@@ -3,14 +3,15 @@
     {
       "path": "pages/Home/Home"
     }, {
-      "path": "pages/Article/Article"
+      "path": "pages/Article/Article",
+      "needLogin": true
     }, {
       "path": "pages/Recent/Recent",
       "style": {
         "navigationBarTitleText": "",
         "enablePullDownRefresh": false
-      }
-
+      },
+      "needLogin": true
     }
   ],
   "globalStyle": {
@@ -22,5 +23,11 @@
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
   },
-  "uniIdRouter": {}
+  "uniIdRouter": {
+    "loginPage": "pages/Home/Home",
+    "needLogin": [
+      "pages/detail/.*"
+    ],
+    "resToLogin": true
+  }
 }

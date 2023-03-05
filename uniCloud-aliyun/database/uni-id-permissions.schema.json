@@ -1,6 +1,7 @@
 {
   "bsonType": "object",
-  "required": ["permission_id",
+  "required": [
+    "permission_id",
     "permission_name"
   ],
   "properties": {

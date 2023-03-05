@@ -1,7 +1,7 @@
 <template>
   <view class="my-input-wrap" :class="$attrs.class">
     <view class="my-input-box">
-      <input class="my-input" type="safe-password" :password='!show' />
+      <input v-bind='filter($attrs)' class="my-input" type="safe-password" :password='!show' />
     </view>
     <text class="my-icon" v-html="show?'&#xebcc;':'&#xebcd;'" @tap.native.stop="show=!show"></text>
   </view>
@@ -13,9 +13,9 @@
 </script>
 <script setup lang="ts">
   import { ref, reactive, onMounted, onUnmounted } from "vue";
-  let show = ref < boolean > (false)
+  let show = ref<boolean>(false)
 
-  function filter(a: object) {
+  function filter(a : object) {
     const { class, ...params } = a
     return params
   }
