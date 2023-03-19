@@ -1,128 +1,161 @@
 <template>
   <view class="container">
-    <ShowMD :mdText='mdText'></ShowMD>
-    <picker v-if='mdList[0]' class="picker" mode="selector" :range="mdList" range-key="title" :value='index'
-      @change="mdChange">
-      {{mdList[index].title}}
-    </picker>
-    <uni-file-picker class="file-picker" v-model="test" fileMediatype="all" mode="grid" @select="fileSelect"
-      @progress="progress" @success="success" @fail="fail" />
-    <navigator class="back" url="/pages/Home/Home">首页</navigator>
+    <ShowMD :mdText='mdText' :showMd="showMd" @update='update'>
+      <template #default>
+        <SearchWrap class='search-wrap' :auto-shrink='true'></SearchWrap>
+      </template>
+      <template #header>
+        <view class="btns">
+          <navigator class="back" open-type='redirect' url="/pages/Home/Home">首页</navigator>
+          <button class="updateBtn" @tap="showMd=!showMd">{{showMd?'预览':'编辑'}}</button>
+          <button class="saveBtn " @tap="save" v-show="showSave&&!showMd">保存</button>
+
+          <picker v-if='main.artList[0]' class="pickerBtn" mode="selector" :range="main.artList" range-key="title"
+            :value='artIndex' @change="artIndex=$event.detail.value">
+            {{"文章:"+currentArt.title}}
+          </picker>
+          <button class="printBtn" @tap='print'>打印</button>
+        </view>
+      </template>
+    </ShowMD>
   </view>
 </template>
 
 <script setup lang="ts">
-  import {
-    ref,
-    onMounted,
-    reactive,
-    watch,
-    onUnmounted,
-    WatchStopHandle,
-    onBeforeMount
-  } from "vue";
-  import getMds from '@/tools/getMds';
-  import { onLoad } from '@dcloudio/uni-app'
-
-  type mdItem = {
-    title : string
-  }
+  import { ref, onMounted, watch, computed, } from "vue";
+  import { onLoad } from '@dcloudio/uni-app';
+  import { getCurd } from "@/utils/getCurd";
+  import { Article } from "@/type";
+  import useMainStore from "@/stores/useMainStore";
+  let main = useMainStore();
   // 当前文章下标数据的key
-  const currenteIndexKey : 'articleIndex' = 'articleIndex'
-  let mdText = ref<string>('')
-  let mdList = reactive<mdItem[]>([]);
-  let query : { value : string };
-  type MdNames = string[];
-  async function getMdNames() : Promise<MdNames> {
-    let names : MdNames = await getMds();
-    names.map((item : string) => {
-      mdList.push({ title: item.replace('.md', '') })
-    })
-    return names
-  }
-  let index = ref<number>(0)
-  let stop : WatchStopHandle;
-  // 选择文章
-  function mdChange(e : CustomEvent) {
-    let i : number = e.detail.value;
-    getMdText(i);
-  }
-  async function getMdText(i : number) {
-    index.value = i
-    let title = mdList[i].title
-    let a = history.state.current.toString().replace(/=.+$/, '=' + title + '.md')
-    history.replaceState(history.state, null, a);
-    let res = await (uni.request({ url: './mds/' + title + '.md' }) as unknown as Promise<{ data : string }>)
-    mdText.value = res.data
-  }
-  // 上传文章
-  let test = ref()
-  // watchEffect(() => { console.log(test.value) })
-
-  function fileSelect(e) { console.log(e); }
-
-  function progress(e) { console.log(e.progress); }
-
-  function success(e) { console.log('success', e.tempFilePaths); }
-
-  function fail() { console.log('fail'); }
-  onLoad(q => {
-    query = q as { value : string }
-  })
+  const currenteIndexKey = 'articleIndex';
+  let curdArt = getCurd<Article>('articles');
+  let mdText = ref<string>('');
+  let query : { title : string };
+  let artIndex = ref<number>(0);
+  let currentArt = computed<Article>(() => main.artList[artIndex.value]);
+  let showMd = ref<Boolean>(false);
+  let showSave = ref<Boolean>(false);
+  function update(text : string) {
+    mdText.value = text;
+    showSave.value = true;
+  };
+  onLoad((q) => {
+    query = q as { title : string }
+  });
   onMounted(() => {
-    getMdNames().then((names) => {
-      let i : number = -1;
-      if (query && query.value) i = names.indexOf(query.value);
-      if (~i) {
-        uni.setStorageSync(currenteIndexKey, '' + i);
-        index.value = i
-      } else {
-        index.value = +uni.getStorageSync(currenteIndexKey)
-      }
-      getMdText(index.value)
-    })
-    stop = watch(index, () => {
-      uni.setStorageSync(currenteIndexKey, '' + index.value);
-    })
+    initArtIndex()
+    watch(artIndex, () => {
+      uni.setStorageSync(currenteIndexKey, '' + artIndex.value);
+      updateMdTextByIndex();
+    }, { immediate: true })
   })
-  onUnmounted(() => {
-    (typeof stop === 'function') && stop();
+  async function save() {
+    let allowSave = false
+    let a : Article = main.artList[artIndex.value];
+    if (!allowSave) {
+      uni.showModal({
+        title: '提示',
+        content: '读写成本太高,暂不支持保存',
+        confirmText: '恢复',
+        cancelText: '不恢复',
+        success(e) {
+          if (!e.confirm) return;
+          mdText.value = a.content
+          showSave.value = false
+        }
+      })
+    } else {
+      a.content = mdText.value;
+      curdArt("update", a)
+      showSave.value = false
+    }
+  }
+  function initArtIndex() {
+    let i : number = -1;
+    // 跳转时
+    if (query && query.title) i = main.artList.findIndex((a : Article) => a.title == query.title);
+    // 跳转无参数时
+    if (!~i) i = +uni.getStorageSync(currenteIndexKey);
+    // 本地无存储时
+    if (!~i) i = 0;
+    // 触发watch
+    artIndex.value = i
+  }
 
-  })
+  async function updateMdTextByIndex() {
+    let { title, content } = main.artList[artIndex.value]
+    let a = history.state.current.toString().replace(/=.+$/, '=' + title)
+    history.replaceState(history.state, null, a);
+    mdText.value = content
+  }
+  async function print() {
+    window.print();
+  }
 </script>
 
 <style lang="scss" scoped>
   .container {
     display: flex;
-    position: relative;
   }
 
-  .picker {
-    position: absolute;
-    background-color: var(--color-3);
-    right: 24px;
-    top: 8px;
-    border-radius: 12px;
-    padding: 4px 16px;
-    box-sizing: border-box;
+  .btns {
     display: flex;
-    align-items: center;
-    white-space: nowrap;
+    width: 100%;
+    padding-left: 8px;
+    gap: 8px;
+
+    &>:not(.search-wrap) {
+      background-color: var(--color-3);
+      border-radius: 12px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      height: 32px;
+      font-size: 16px;
+      font-weight: 800;
+      text-shadow: 1px 1px 1px hsl(0, 0%, 97%);
+      color: var(--color-font-default);
+      padding: 4px 16px;
+      box-shadow: var(--shadow-btn);
+      margin: 0;
+
+      &:hover {
+        box-shadow: var(--shadow-btn-hover);
+      }
+
+      &:active {
+        box-shadow: var(--shadow-btn-active);
+      }
+    }
   }
 
-  .file-picker {
-    position: absolute;
-    background-color: var(--color-3);
-    left: 50%;
-    top: 8px;
-    width: fit-content !important;
-    box-sizing: border-box;
-    transform: translateX(-50%);
+  .search-wrap {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    z-index: 2;
   }
 
-  .back {
-    position: absolute;
-    left: 100px;
-    top: 8px;
+  .updateBtn {}
+
+  .pickerBtn:not(.a) {
+    margin-left: auto;
+  }
+
+  .saveBtn {
+    margin-right: auto;
+  }
+
+  @media print {
+    .container>*:not(.markdown-box) {
+      display: none;
+    }
+
+    .container {
+      max-width: 100%;
+    }
   }
 </style>

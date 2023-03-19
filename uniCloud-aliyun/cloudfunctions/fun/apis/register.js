@@ -10,14 +10,16 @@ module.exports = async function login(event, context, dbJQL, user, uniIDIns) {
   } else if (res.total) {
     throw new Error('账号已注册')
   }
+
+  let role = ["user"]
   // 增加的结果
   let addRes = await dbJQL.collection('uni-id-users').add({
-    "comment": "普通用户",
-    "permission": [],
-    "role_id": "user",
-    "role_name": "普通用户"
-  }, );
+    username: acc,
+    password: pwd,
+    role
+  });
   if (addRes.code) throw new Error(addRes.code);
+  let uid = addRes.id
   //创建一个新token
   let { token, tokenExpired } = await uniIDIns.createToken({ uid, role })
   return { uid, role, token }

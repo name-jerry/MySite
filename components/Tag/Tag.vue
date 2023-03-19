@@ -1,45 +1,93 @@
+<template>
+  <view class="tag-box" :class="{'show-options':isShowOptions,'show-children':isShowChildren}" @tap="Toggle">
+    <navigator open-type='redirect' :url="prop.tag.href && !prop.tag.children ? prop.tag.href : 'javascript:void(0)'"
+      :target="prop.tag.href && !prop.tag.children ? '_blank' : ''" class="card tag">
+      <view class="text-content">
+        <image v-if="prop.tag.src" :src="prop.tag.src" alt="" class="img"></image>
+        <text v-if="prop.tag.title" class="lines" style="--lines: 2">{{ prop.tag.title }}</text>
+        <slot></slot>
+      </view>
+      <!-- hover时提示用的 -->
+      <view class="sub-content" ref="sub" v-if="prop.tag.sub">
+        {{ prop.tag.sub }}
+      </view>
+    </navigator>
+    <!-- 有子类时渲染子类,js重置显示位置 -->
+    <template v-if="prop.tag?.children&&prop.tag.children.length>0">
+      <view class="children-wrap" ref="children" :style="childrenStyle">
+        <Tag v-for="item in prop.tag.children" :tag="item" :key='item.id' class="item"></Tag>
+      </view>
+    </template>
+    <!-- 点 -->
+    <view class="dot-wrap">
+      <view class="icon-dot hover-bg-color" @tap.native.stop="tapDot">&#xe623;</view>
+      <Options class="options" :show-mask="false" :options="options" @select="select"></Options>
+    </view>
+    <!-- 遮罩 -->
+    <view v-show='isShowShadow' data-shadow='true' class="shadow"></view>
+  </view>
+</template>
 <script setup lang="ts">
-  import { onMounted, getCurrentInstance, ComponentInternalInstance, onUnmounted, reactive, ref } from "vue";
-  import { getClientInfo, ClientInfo } from "@/utils/getClientInfo"
-  import type { Tag } from '@/type'
-
-  let { tag } = defineProps<{ tag : Tag }>();
-  let self : ComponentInternalInstance = getCurrentInstance() as ComponentInternalInstance
+  import { onMounted, onUnmounted, reactive, ref, watch } from "vue";
+  import { useGetClientInfo } from "@/utils/useGetClientInfo"
+  import type { Tag, Article } from '@/type';
+  let prop = defineProps<{ tag : Tag }>();
   let childrenStyle : any = reactive({});
   // 兼容移动端
   let isShowChildren = ref<boolean>(false)
   let isShowShadow = ref<boolean>(false)
   let isShowOptions = ref<boolean>(false)
   // tag-box位置信息
-  let data : ClientInfo;
-  const emit = defineEmits<{
-    (e : 'dot', data : Tag)
+  let { clientInfo } = useGetClientInfo('.tag-box')
+  let options = ref<string[]>(["重命名", "删除"]);
+  let emit = defineEmits<{
+    (e : "update", tag : Tag) : void
+    (e : "remove", tag : Tag) : void
   }>()
-
+  async function updateName() {
+    uni.showModal({
+      editable: true,
+      title: "请输入名字",
+      success: async (e) => {
+        if (e.confirm) {
+          let a : Tag = { _id: prop.tag._id, title: e.content };
+          emit('update', a);
+        }
+      }
+    })
+  }
+  async function remove() {
+    emit('remove', prop.tag);
+  }
+  let fns = new Map();
+  fns.set("重命名", updateName)
+  fns.set("删除", remove)
+  function select(o : string) {
+    blur();
+    fns.has(o) && fns.get(o)()
+  }
   function tapDot() : void {
     isShowOptions.value = true
     isShowShadow.value = true
     isShowChildren.value = false
   }
+  function blur() {
+    isShowChildren.value = false
+    isShowShadow.value = false
+    isShowOptions.value = false
+  }
   // 兼容移动端
   function Toggle(e : CustomEvent) {
     let isShadow = (e.target as any).dataset?.shadow;
-    if (isShadow) {
-      isShowChildren.value = false
-      isShowShadow.value = false
-      isShowOptions.value = false
-    } else {
-      initLeftAndWidth()
-      isShowChildren.value = true
-      isShowShadow.value = true
-      isShowOptions.value = false
-    }
+    if (isShadow) return blur();
+    isShowChildren.value = true;
+    isShowShadow.value = true;
+    isShowOptions.value = false;
   }
   // 获取元素在窗口中的位置children-wrap位置
-  async function initLeftAndWidth() {
-    if (!tag.children || tag.children.length == 0) return;
-    data = await getClientInfo('.tag-box', self)
-    let { clientLeft: l, clientRight: r, clientTop: t, clientBottom: b } = data
+  function initChildrenStyle() {
+    if (!prop.tag.children || prop.tag.children.length == 0) return;
+    let { left: l, right: r, top: t, bottom: b } = clientInfo.value
     if (l > r) {
       childrenStyle.right = '101%'
       childrenStyle.left = 'initial'
@@ -58,47 +106,12 @@
 
   // 位置变动时候更新一次位置
   onMounted(() => {
-    initLeftAndWidth();
-    uni.onWindowResize(initLeftAndWidth)
+    watch(clientInfo, initChildrenStyle, { deep: true, immediate: true })
   });
   onUnmounted(() => {
-    uni.offWindowResize(initLeftAndWidth)
     isShowChildren.value = false
   })
 </script>
-<template>
-  <view class="tag-box" :class="{'show-options':isShowOptions,'show-children':isShowChildren}" @tap="Toggle">
-    <navigator :url="tag.href && !tag.children ? tag.href : 'javascript:void(0)'"
-      :target="tag.href && !tag.children ? '_blank' : ''" class="card tag">
-      <view class="text-content">
-        <image v-if="tag.src" :src="tag.src" alt="" class="img"></image>
-        <text v-if="tag.title" class="lines" style="--lines: 2">{{ tag.title }}</text>
-        <slot></slot>
-      </view>
-      <!-- hover时提示用的 -->
-      <view class="sub-content" ref="sub" v-if="tag.sub">
-        {{ tag.sub }}
-      </view>
-    </navigator>
-    <!-- 有子类时渲染子类,js重置显示位置 -->
-    <template v-if="tag?.children&&tag.children.length>0">
-      <view class="children-wrap" ref="children" :style="childrenStyle">
-        <Tag v-for="item in tag.children" :tag="item" :key='item.id' class="item"></Tag>
-      </view>
-    </template>
-    <!-- 点 -->
-    <view class="dot-wrap" @tap.native.stop="tapDot">
-      <view class="icon-dot hover-bg-color">&#xe623;</view>
-      <view class="options">
-        <text class="options-item hover-bg-color">重命名</text>
-        <text class="options-item hover-bg-color">删除</text>
-      </view>
-    </view>
-    <!-- 遮罩 -->
-    <view v-show='isShowShadow' data-shadow='true' class="shadow"></view>
-  </view>
-</template>
-
 <style lang="scss" scoped>
   .tag-box {
     cursor: pointer;
@@ -211,7 +224,6 @@
 
   .dot-wrap {
     --color: gray;
-    display: none;
     position: absolute;
     box-sizing: border-box;
     top: 4px;
@@ -236,8 +248,8 @@
         background-color: white;
         border: 1px black solid;
         padding: 2px 4px;
-        left: 101%;
-        top: 101%;
+        left: 50%;
+        bottom: 110%;
       }
     }
   }
@@ -245,8 +257,8 @@
   .options {
     display: none;
     position: absolute;
-    left: 0;
-    top: 101%;
+    left: 100%;
+    top: 0%;
     flex-direction: column;
     width: max-content;
     background-color: white;
@@ -254,16 +266,6 @@
     font-family: inherit;
     box-shadow: var(--shadow-hover);
 
-    .options-item {
-      border-bottom: 1px solid hsla(0, 0%, 0%, .2);
-      padding: 10px;
-      padding-right: 20px;
-
-      &:not(:last-of-type) {
-        border-bottom: none;
-      }
-
-    }
   }
 
   .show-options {

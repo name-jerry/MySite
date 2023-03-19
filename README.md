@@ -141,3 +141,27 @@
  }
  export { getClientInfo, ClientInfo }
 ```
+3. vue3+web端中首次加载得页面第一次使用锚点定位进行页面内跳转时会出现刷新页面怎么处理?
+- 阻止a得默认点击事件根据href中得id滑动到对应标签
+```js
+// 外部连接改为新标签页代开,业内跳转改为
+  function updateTargetModule() {
+    let h = location.href.toString().slice(0, 10);
+    let aList = document.querySelectorAll('a');
+    if (!aList.length) return;
+    aList.forEach(a => {
+      if (!~a.href.toString().indexOf(h)) {
+        (a.target = '_blank');
+      } else {
+        a.addEventListener('click', (e) => {
+          e.preventDefault()
+          let h = a.href
+          let s = h.indexOf('#')
+          let id = h.slice(s + 1);
+          document.getElementById(id).scrollIntoView(true);
+        })
+      }
+    }
+    )
+  }
+```

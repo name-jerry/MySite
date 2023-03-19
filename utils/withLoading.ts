@@ -13,15 +13,15 @@ const defaultOptions = {
  * @param options 第二个可选是uni.showLoading的参数
  * @returns Function 一个新的函数，去执行它吧
  */
-const withLoading = <T>(fn: T, options: UniNamespace.ShowLoadingOptions): T => {
-  const showLoading = (options: UniNamespace.ShowLoadingOptions) => {
+const withLoading = (fn, options : UniNamespace.ShowLoadingOptions) => {
+  const showLoading = (options : UniNamespace.ShowLoadingOptions) => {
     uni.showLoading(options)
   }
   const hideLoading = () => {
     uni.hideLoading()
   }
   const _options = Object.assign(defaultOptions, options)
-  const newFn: T = (...args) => {
+  const newFn = (...args) => {
     try {
       showLoading(_options)
       const result = (fn as unknown as Function)(...args)

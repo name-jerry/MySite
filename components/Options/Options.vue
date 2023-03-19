@@ -1,7 +1,7 @@
 <template>
-  <view class="options-wrap">
+  <view class="options-wrap" @tap.stop="$emit('select',$event.target.dataset.item)">
     <template v-for="item in props.options" :key="item">
-      <view class="option" @tap="$emit('select',item)">
+      <view class="option" :data-item='item'>
         <text v-if='item.fontIcon' class="icon" v-html="item.fontIcon"></text>
         <text class="item-title">{{item.title?item.title:item}}</text>
       </view>
@@ -14,7 +14,6 @@
   import type { Option } from '@/type'
   let props = withDefaults(defineProps<{ options : Option[], showMask : boolean }>(), { options: () => [], showMask: true })
 </script>
-
 <style scoped lang="scss">
   .options-wrap {
     position: relative;
@@ -33,8 +32,7 @@
       justify-content: center;
       gap: .5em;
       box-sizing: border-box;
-      padding-left: .5em;
-      padding-right: .5em;
+      padding: .25em 1em;
       line-height: var(--lineHeight-2);
       border: 1px solid hsl(0, 0%, 80%);
       box-shadow: 0px 1px 0px hsl(0, 0%, 80%);
@@ -42,9 +40,11 @@
       cursor: pointer;
       background-color: inherit;
 
+
       .item-title,
       .icon {
         pointer-events: none;
+        white-space: nowrap;
       }
 
       &:hover {

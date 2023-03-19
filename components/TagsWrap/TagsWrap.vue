@@ -1,28 +1,31 @@
 <template>
   <view class="tags-wrap container" :style="tagsWrapStyle">
-    <template v-for="(item,key)  in tagList" :key="item.id">
-      <Tag v-if='key<showTagsCount' class='tag-box hover-shadow-btn' :tag=' item'></Tag>
+    <template v-for="(item,i)  in tagList" :key="item._id">
+      <Tag v-if="i<showTagsCount " class='tag-box hover-shadow-btn' :tag='item' @update='update' @remove="remove"></Tag>
     </template>
-    <view class="add tag-box hover-shadow-btn" :class="{'is-more':isMore}" @tap.native.stop='showMore'>
+    <view v-show="showBtn" class="add tag-box hover-shadow-btn" :class="{'is-more':isMore}" @tap.native.stop='showMore'>
     </view>
   </view>
 </template>
 
 <script setup lang='ts'>
-  import { ref, reactive, onMounted, onUnmounted } from "vue"
-
-  let { tagList } = defineProps < {
-    tagList: Tag[]
-  } > ()
+  import { ref, reactive, onMounted, onUnmounted, computed, watch, watchEffect } from "vue"
+  import type { Article } from "../../type"
+  import { getCurd } from "@/utils/getCurd"
+  import useMainStore from "@/stores/useMainStore"
+  let main = useMainStore();
+  let curdArt = getCurd < Article > ('articles');
+  let tagList = computed(() => main.artList.map(setTag));
   let tagsWrapStyle = reactive < {
     [key: string]: string,
   } > ({
-    gap: '20px',
+    gap: '15px',
     '--tag-width': '150px'
   })
   let showTagsCount = ref < number > (0)
   let isMore = ref < boolean > (false)
-  let column: number;
+  let showBtn = computed(() => tagList.value.length > (2 * column.value - 1))
+  let column = ref < number > (0);
 
   function getShowColumn(): number {
     isMore.value = false
@@ -31,14 +34,12 @@
     let g: number;
     if (wW <= 575) {
       wW -= 20
-    } else if (wW <= 768) {
-      wW = 540
     } else if (wW <= 992) {
-      wW = 720
+      wW -= 32
     } else if (wW <= 1200) {
-      wW = 930
+      wW = 930 - 32
     } else if (wW > 1200) {
-      wW = 1140
+      wW = 1140 - 32
     }
     let { gap, '--tag-width': width } = tagsWrapStyle;
     g = +gap.replace('px', '');
@@ -48,17 +49,42 @@
   }
 
   function updateShowCount() {
-    column = getShowColumn()
-    showTagsCount.value = 2 * column - 1
+    column.value = getShowColumn()
+    showTagsCount.value = 2 * column.value - 1
   }
-  updateShowCount()
 
   function showMore() {
-    showTagsCount.value = isMore.value ? 2 * column - 1 : Number.MAX_VALUE;
+    showTagsCount.value = isMore.value ? 2 * column.value - 1 : Number.MAX_VALUE;
     isMore.value = !isMore.value
+  }
+
+  function setTag(v: Article) {
+    return {
+      _id: v._id,
+      href: "/pages/Article/Article?title=" + v.title,
+      title: v.title,
+      sub: v.sub,
+    }
+  }
+
+  function update(a: Article) {
+    curdArt("update", a);
+    const i: number = main.artList.findIndex((v) => {
+      return v._id == a._id
+    })
+    if (~i) main.artList[i] = { ...main.artList[i], ...a };
+  }
+
+  function remove(a: Article) {
+    curdArt('remove', a)
+    const i: number = main.artList.findIndex((v) => {
+      return v._id == a._id
+    })
+    if (~i) main.artList.splice(i, 1);
   }
   // =========挂载卸载============
   onMounted(() => {
+    updateShowCount()
     uni.onWindowResize(updateShowCount)
   })
   onUnmounted(() => {
@@ -72,7 +98,7 @@
     box-sizing: border-box;
     grid-template: 68px/ repeat(auto-fill, var(--tag-width));
     grid-auto-rows: 68px;
-    justify-content: center;
+    justify-content: space-between;
     position: relative;
     font-size: 15px;
     border-radius: 12px;

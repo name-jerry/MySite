@@ -1,9 +1,9 @@
 <template>
-  <view class="container">
-    <view class="search-box hover-shadow-input" style="--height:50px">
-      <input type="text" class="search" confirm-type="search" @confirm="enter" v-model='searchWord'
+  <view class="search-wrap">
+    <view class="search-box hover-shadow-input" :class="{'blank':!searchWord&&prop.autoShrink}">
+      <input type="text" class="search" confirm-type="search" @confirm="enter" v-model='searchWord' @blur="blur"
         @focus="focusInput" />
-      <Options v-show='showOptions' class="options" :options='options' :show-mask='false' @select='select'>
+      <Options class="options" :class="{show:showOptions}" :options='optionList' :show-mask='false' @select='select'>
       </Options>
       <picker @change="(e:CustomEvent)=>{ index = e.detail.value}" mode="selector" :range='toolList' range-key="label"
         class="tools">
@@ -13,30 +13,31 @@
         <text class="icon-search ">&#xe648;</text>
       </a>
     </view>
-    <Mask style="z-index: 2;" @tap='blur'></Mask>
   </view>
 </template>
 
 <script setup lang='ts'>
-  import { ref, reactive, onMounted, onUnmounted } from "vue";
-  import type { Option } from '@/type'
-  const optionsKey = 'optionKey'
+  import { ref, reactive, onMounted, onUnmounted, watch } from "vue";
+  import useMainStore from "@/stores/useMainStore"
+  const main = useMainStore()
+  let prop = defineProps < {
+    autoShrink ? : boolean
+  } > ()
+  const optionsKey = 'optionsKey'
   let toolList = reactive < { label: string, value: string } [] > ([
     { label: 'Can I Use', value: 'https://caniuse.com/?search=' },
     { label: 'bing', value: 'https://cn.bing.com/search?q=' },
     { label: '菜鸟教学', value: 'https://www.runoob.com/?s=' },
     { label: 'iconfont', value: 'https://www.iconfont.cn/search/index?searchType=icon&q=' },
   ])
-  let searchWord = ref < string | undefined | null > ('')
+  let searchWord = ref < string > ()
   let index = ref < number > (0)
-  let options = ref < Option[] > (['']);
+  let optionList = ref < string[] > ([]);
   let showOptions = ref < boolean > (false);
-  let isFocus: Boolean = false;
   let btn = ref()
 
   function focusInput() {
     showOptions.value = true
-    isFocus = true;
   }
 
   function enter(e) {
@@ -45,94 +46,140 @@
 
   function blur() {
     showOptions.value = false
-    isFocus = false;
   }
 
   function search() {
     let v = searchWord.value.replace(/(^\s+)|(\s+$)/g, '')
     if (v == '') return;
     addOption(v);
-    uni.setStorage({ key: optionsKey, data: options.value })
   }
 
-  function select(item: Option): void {
-    searchWord.value = item.title ? item.title : item
-    showOptions.value = false
+  function select(item: string): void {
+    searchWord.value = item
   }
 
-  function setOptions(o: Option[]): void {
+  function setOptions(o: string[]): void {
     let set = new Set([...o])
-    options.value = [...set]
+    optionList.value = [...set]
+    uni.setStorageSync(optionsKey, JSON.stringify(optionList.value))
   }
 
-  function addOption(o: Option) {
-    let set = new Set([...options.value])
+  function addOption(o: string) {
+    let set = new Set([...optionList.value])
     set.add(o)
-    options.value = [...set]
+    optionList.value = [...set]
+    uni.setStorageSync(optionsKey, JSON.stringify(optionList.value))
   }
-
-
+  async function refresh() {
+    if (!main.isLogin) return optionList.value = [];
+    let l = uni.getStorageSync(optionsKey);
+    if (l) return setOptions(JSON.parse(l))
+  }
   onMounted(() => {
-    setOptions(uni.getStorageSync(optionsKey))
-  })
+    watch(() => main.isLogin, refresh, { immediate: true })
+  });
   onUnmounted(() => {})
 </script>
 
 <style scoped lang='scss'>
-  .container {
-    width: 100%;
+  .search-box {
+    --height: 35px;
+    z-index: 3;
+    height: var(--height);
+    border-radius: var(--height);
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: auto 1fr calc(var(--height) * 1.3);
+    align-items: center;
+    background-color: var(--color-white);
+    position: relative;
+    transition: .25s linear;
+    transform-origin: right bottom;
+    margin-left: auto;
 
-    * {
-      z-index: 3;
+    .options {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      width: 100%;
+      transform: translateX(-50%) scaleY(0);
+      opacity: 0;
+      transform-origin: top center;
+      background-color: white;
+      max-height: 100px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      transition: .25s linear .2s;
+
+
+      &.show {
+        transform: translateX(-50%);
+        opacity: 1;
+      }
     }
 
-    .search-box {
-      height: var(--height);
-      margin: 0 auto;
-      border-radius: var(--height);
+    .search {
+      grid-column: 2;
+      height: 100%;
+      width: 100%;
       box-sizing: border-box;
-      display: grid;
-      grid-template-columns: 1fr auto calc(var(--height) * 1.3);
-      background-color: var(--color-white);
-      position: relative;
+      padding-left: .25em;
+    }
 
-      .search {
-        grid-column: 1;
-        height: 100%;
-        width: 100%;
-        padding-left: 1em;
-        box-sizing: border-box;
+
+    .tools {
+      grid-column: 1;
+      grid-row: 1;
+      box-sizing: border-box;
+      font-size: .75em;
+      padding-left: .75em;
+      padding-right: .3em;
+      border-right: 1px solid rgba(0, 0, 0, .3);
+      overflow: hidden;
+
+      &:deep(span) {
+        white-space: nowrap;
       }
+    }
 
-      .options {
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        width: 60%;
-        transform: translateX(-50%);
-        background-color: white;
-        max-height: 100px;
-        overflow: auto;
-      }
+    .btn {
+      position: absolute;
+      right: 0;
+      width: calc(var(--height) * 1.3);
+      height: 100%;
+      background-color: var(--color-bg-btn);
+      color: white;
+      border-radius: 0 var(--height) var(--height) 0;
+    }
+  }
 
+  .search-box.blank {
+    width: var(--height);
+    opacity: .6;
+    transform: scale(.8);
 
+    .btn {
+      width: var(--height);
+      border-radius: 50%;
+    }
 
-      .tools {
-        grid-column: 2;
-        box-sizing: border-box;
-        line-height: var(--height);
-        padding: 0 .5em;
-      }
+    .options {
+      display: none;
+    }
+
+    &:has(:hover, :focus-within) {
+      width: 100%;
+      opacity: 1;
+      transform: none;
 
       .btn {
-        grid-column: 3;
-        width: 100%;
-        height: 100%;
-        background-color: var(--color-bg-btn);
-        color: white;
+        width: calc(var(--height) * 1.3);
         border-radius: 0 var(--height) var(--height) 0;
       }
 
+      .options {
+        display: block;
+      }
     }
   }
 </style>

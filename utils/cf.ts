@@ -5,7 +5,7 @@
 *@param{object}data 传给后端的数据对象
 *@return 返回一个Promise
 */
-export default function cf(data : any) : Promise<any> {
+export default async function cf(data : any) : Promise<any> {
   let showLoading = () => {
     uni.showLoading({
       title: '加载中',

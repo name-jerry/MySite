@@ -33,7 +33,7 @@ const md = window.markdownit({
       if (lang && hljs.getLanguage(lang)) {
         try {
           // return hljs.highlight(str + '<span>' + lang + '</span>', { language: lang }).value;
-          return '<pre class="hljs" lang=' + lang + '><span id="copyBtn"></span><code>' +
+          return '<pre class="hljs" lang=' + lang + '><span class="copyBtn" ></span><code>' +
             hljs.highlight(lang, str, true).value +
             '</code></pre>';
         } catch (__) {}
@@ -50,4 +50,5 @@ const md = window.markdownit({
   .use(window.markdownItAnchor, { permalink: true, permalinkBefore: true, permalinkSymbol: '§' })
   .use(toc, { 'includeLevel': [1, 2, 3, 4, 5, 6] })
   .use(window.markdownitTaskLists);
+
 export default md

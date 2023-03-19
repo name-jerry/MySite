@@ -1,48 +1,58 @@
-<script lang="ts">
-  export default {
-    onLaunch: function () {
-      console.log("App onLaunch");
-      // #ifndef H5 || APP-PLUS
-      let updateManager = uni.getUpdateManager();
-      updateManager.onCheckForUpdate(res => {
-        if (res.hasUpdate) console.log("有新版本");
-      });
-      updateManager.onUpdateReady(() => {
-        uni.showModal({
-          title: "更新提示",
-          content: "新版本已经准备好，是否重启应用？",
-          success(res) {
-            if (res.confirm) updateManager.applyUpdate();
-          },
-        });
-      });
-      // #endif
-    },
+<script lang="ts" setup>
+  import { onLaunch, onShow } from '@dcloudio/uni-app';
+  import { checkLogin } from "@/utils/checkLogin"
+  import useMainStore from "@/stores/useMainStore"
+  import { getCurd } from "@/utils/getCurd"
+  import { useRefresh } from "@/utils/useRefresh"
+  import type { Article } from '@/type';
+  // 当前文章下标数据的key
+  const articleKey = "articleKey";
+  let curdArt = getCurd<Article>('articles');
+  let { list } = useRefresh<Article>(curdArt, articleKey);
+  let main = useMainStore();
+  main.artList = list
 
-    onShow: function () {
-      console.log("App Show");
-      // 注册登录事件
-      uniCloud.onNeedLogin(event => {
-        let { uid, role, permission, tokenExpired } = uniCloud.getCurrentUserInfo()
-        if (!tokenExpired || tokenExpired < Date.now()) {
-          uni.navigateTo({
-            url: "/pages/Home/Home?needLogin=true&uniIdRedirectUrl=" + event.uniIdRedirectUrl
-          })
-          uni.showToast({
-            title: "请登录",
-            icon: "none"
-          })
-        }
-
-      })
-    },
-    onHide: function () {
-      console.log("App Hide");
-    },
-  };
+  onLaunch(() => {
+    console.log("App onLaunch");
+    // #ifndef H5 || APP-PLUS
+    let updateManager = uni.getUpdateManager();
+    updateManager.onCheckForUpdate(res => {
+      if (res.hasUpdate) console.log("有新版本");
+    });
+    updateManager.onUpdateReady(() => {
+      uni.showModal({
+        title: "更新提示",
+        content: "新版本已经准备好，是否重启应用？",
+        success(res) {
+          if (res.confirm) updateManager.applyUpdate();
+        },
+      });
+    });
+    // #endif
+  })
+  onShow(() => {
+    let main = useMainStore()
+    console.log("App Show");
+    // 注册登录事件
+    uniCloud.onNeedLogin(event => {
+      let isLogin = checkLogin()
+      if (!isLogin) {
+        main.isLogin = false
+        uni.navigateTo({
+          url: "/pages/Home/Home?needLogin=true&uniIdRedirectUrl=" + event.uniIdRedirectUrl
+        })
+        uni.showToast({
+          title: "请登录",
+          icon: "none"
+        })
+      }
+    })
+  })
 </script>
 
 <style lang="scss">
+  @import url('@/static/font/fira_code.css');
+
   page {
     /* uniapp的html的font-size会随着设备以及宽度的变化而变化,这里设置没用 */
     /* font-size: 10px; */
@@ -54,7 +64,7 @@
     --color-2: hsl(206, 100%, 42%);
     --color-3: hsl(207, 45%, 80%);
     --color-4: #3A4856;
-    --color-5: #E6F4F1;
+    --color-5: hsl(146, 36%, 61%);
     --color-border-default: hsl(207, 30%, 80%);
     --color-a-default: var(--color-2);
     --color-font-default: var(--color-4);
@@ -64,7 +74,6 @@
     --color-bg-quote: var(--color-3);
     --color-bg-code: var(--color-3);
     --color-bg-pre: var(--color-3);
-    --color-bg-hr: var(--color-5);
     --borderRadius-default: 6px;
     --padding-default: calc(var(--fontSize-default) / 2);
     --lineHeight-default: 1.5;
@@ -119,9 +128,9 @@
   @font-face {
     font-family: 'iconfont';
     /* Project id 3837728 */
-    src: url('//at.alicdn.com/t/c/font_3837728_mb67r2eyyze.woff2?t=1677144398159') format('woff2'),
-      url('//at.alicdn.com/t/c/font_3837728_mb67r2eyyze.woff?t=1677144398159') format('woff'),
-      url('//at.alicdn.com/t/c/font_3837728_mb67r2eyyze.ttf?t=1677144398159') format('truetype');
+    src: url('//at.alicdn.com/t/c/font_3837728_x1ymk13npx.woff2?t=1678626400055') format('woff2'),
+      url('//at.alicdn.com/t/c/font_3837728_x1ymk13npx.woff?t=1678626400055') format('woff'),
+      url('//at.alicdn.com/t/c/font_3837728_x1ymk13npx.ttf?t=1678626400055') format('truetype');
   }
 
   [class*="icon"] {
@@ -336,8 +345,7 @@
   /* ====================响应式调整===================== */
   /* 每个块都设置container类为了在统一调整显示 */
   .container {
-    /* 设置100%未达到最大宽度时显示沾满 */
-    max-width: 80%;
+    max-width: 1140px;
     box-sizing: border-box;
     width: 100%;
     /* 设置块元素的左右居中 */
@@ -357,8 +365,6 @@
   @media (max-width: 992px) {
     .container {
       max-width: 100%;
-      padding-right: 0px;
-      padding-left: 0px;
     }
   }
 

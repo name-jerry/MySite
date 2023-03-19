@@ -1,0 +1,25 @@
+{
+  "bsonType": "object",
+  "required": ["title", "user_id"],
+  "permission": {
+    "read": "doc.user_id==auth.uid",
+    "create": true,
+    "update": "doc.user_id==auth.uid",
+    "delete": "doc.user_id==auth.uid"
+  },
+  "properties": {
+    "_id": { "description": "存储文档 ID，系统自动生成" },
+    "user_id": {
+      "bsonType": "string",
+      "foreignKey": "uni-id-users._id",
+      "forceDefaultValue": {
+        "$env": "uid"
+      }
+    },
+    "title": { "title": "内容", "bsonType": "string", "description": "内容", "trim": "both" },
+    "create_date": { "bsonType": "timestamp", "description": "创建时间", "forceDefaultValue": { "$env": "now" } },
+    "is_end": { "bsonType": "bool", "description": "是否完结", "defaultValue": false },
+    "end_date": { "bsonType": "timestamp", "description": "结束时间", "defaultValue": null }
+  },
+  "version": "0.0.1"
+}

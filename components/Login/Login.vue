@@ -1,6 +1,11 @@
 <template>
   <view class="login-container" :class='{active:isRegister}'>
     <view class="main-wrap">
+      <slot></slot>
+      <view class="mask" v-if="main.isLogin">
+        <text>已登录,是否退出</text>
+        <view class="btn hover-shadow-btn" @tap="main.isLogin=false">退出</view>
+      </view>
       <view class="main-box">
         <view class="item-login">
           <input class="show input hover-shadow-input" autocomplete='off' type="text" placeholder="账号"
@@ -28,12 +33,12 @@
 <script setup lang="ts">
   import { SHA1 } from 'crypto-js';
   import { ref, reactive, onMounted, onUnmounted } from "vue";
-  import cf from '@/utils/cf'
-  // console.log(SHA1('j3jj').toString());
-  //052891722d47b7c8aac0f07dc08f4f94d36f70d0
-  type Emit = { (event : 'login', success : Boolean) : void }
-  let emit = defineEmits<Emit>()
+  import cf from '@/utils/cf';
+  import checkPwd from '@/utils/checkPwd';
+  import useMainStore from "@/stores/useMainStore"
+  let main = useMainStore();
   let isRegister = ref<boolean>(false)
+  let s = (msg : string) : void => { uni.showToast({ title: msg, icon: 'error' }); }
   type Form = {
     acc : string,
     pwd1 : string,
@@ -44,30 +49,26 @@
     pwd1: '',
     pwd2: '',
   })
-
-  async function loginBtn(e) {
-    if (!form.acc || !form.pwd1) {
-      return uni.showToast({
-        title: ' 请输入信息',
-        icon: 'none'
-      })
-    }
-
-    let res = await cf({ type: 'login', acc: form.acc, pwd: form.pwd1 })
+  async function loginBtn() {
+    if (!form.acc || !form.pwd1) return s(' 请输入信息');
+    let pwd = SHA1(form.pwd1).toString();
+    let res = await cf({ type: 'login', acc: form.acc, pwd })
     if (res.success) {
       uni.showToast({
         title: '登录成功',
       })
-      emit('login', true)
+      main.isLogin = true;
     }
   }
-
-  async function registerBtn(e) {
-    if (!form.acc || !form.pwd1) return uni.showToast({ title: '请输入信息' });
-    if (form.pwd1 !== form.pwd2) return uni.showToast({ title: '密码不一致' });
-    let pwd = SHA1(form.pwd1)
-    let { success, errMsg } = await cf({ type: 'register', acc: form.acc, pwd })
-
+  async function registerBtn() {
+    if (!form.acc || !form.pwd1) return s('请输入信息');
+    if (form.pwd1 !== form.pwd2) return s('密码不一致');
+    if (!checkPwd(form.pwd1)) return s('8-16位,字母、数字和符号任意两种的组合');
+    let pwd = SHA1(form.pwd1).toString();
+    let { success } = await cf({ type: 'register', acc: form.acc, pwd });
+    if (!success) return;
+    uni.showToast({ title: '注册成功,请登录' });
+    isRegister.value = false;
   }
 
   function clearForm() {
@@ -76,7 +77,6 @@
     form.pwd2 = '';
   }
 
-  function pwdBlur(value : string) { console.log(value); }
   onMounted(() => {
   })
 </script>
@@ -99,6 +99,26 @@
   .main-wrap,
   .main-box {
     transition: var(--transition-default);
+  }
+
+  .mask {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+    background-color: var(--color-bg-quote);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 16px;
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+
+    .btn {
+      border-radius: 6px;
+    }
   }
 
   .main-wrap {

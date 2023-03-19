@@ -1,49 +1,87 @@
 <template>
-  <view class="markdown-box">
-    <view class="markdown-head"><text class="icon" @tap="tocShow=!tocShow">&#xe677;</text></view>
-    <div class="markdown-body" v-html="mdHtml" @click="clickToc">
+  <div class="markdown-box">
+    <slot> </slot>
+    <div class="markdown-head">
+      <text class="icon" @tap="tocShow=prop.showMd?tocShow:!tocShow">&#xe677;</text>
+      <slot name="header"></slot>
     </div>
-    <div class="backTop" v-show='showBackTop' @click="backTop"><svg width="16" height="16" viewBox="0 0 24 24"
-        fill="currentColor">
+    <div ref='markdownBody' class="markdown-body" v-show="!prop.showMd" v-html="mdHtml" @click="clickToc">
+    </div>
+    <MyTextarea class="textarea" :text="text" @update='test' v-show="prop.showMd"></MyTextarea>
+    <div class="backTop" :class=' {showBack:showBackTop}' @click="backTop">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
         <path fill-rule="evenodd"
           d="M13.792 3.681c-.781-1.406-2.803-1.406-3.584 0l-7.79 14.023c-.76 1.367.228 3.046 1.791 3.046h15.582c1.563 0 2.55-1.68 1.791-3.046l-7.79-14.023Z"
           clip-rule="evenodd"></path>
-      </svg></div>
-    <Mask v-show='tocShow' @tap='tocShow=false'></Mask>
-  </view>
+      </svg>
+    </div>
+    <Mask v-show='tocShow' class="mask" @tap='tocShow=false'></Mask>
+  </div>
 </template>
 
 <script setup lang="ts">
   import md from './markdownIt.js'
-  import { ref, onMounted, computed, watch, onUnmounted, WatchStopHandle, nextTick } from "vue";
-  let prop = defineProps<{ mdText : string }>()
-  let mdHtml = ref<string>('')
-  let cancel : WatchStopHandle;
-  let tocShow = ref<boolean>(false)
-  let tocStyle = computed<'none' | 'inline'>(() => tocShow.value ? 'inline' : 'none')
-  // 监听滚动事件现实按钮
-  let showBackTop = ref<boolean>(false)
-  // 监听页面内跳转事件,关闭目录显示
-  if (window && typeof window == 'object') {
-    window.addEventListener('hashchange', (e : CustomEvent) => {
-      if (tocShow) tocShow.value = false;
-    })
-    let scrollFn = () => {
-      let setTimeCancel : NodeJS.Timeout
-      return function () {
-        if (setTimeCancel) clearTimeout(setTimeCancel);
-        setTimeCancel = setTimeout(() => {
-          var h = document.documentElement.scrollTop || document.body.scrollTop;
-          showBackTop.value = h > 100 ? true : false;
-          setTimeCancel = null
-        }, 500)
-      }
+  import { ref, reactive, onMounted, computed, watch, nextTick } from "vue";
+  import { useEventListener } from "@/utils/event"
+  let prop = defineProps<{ mdText : string, showMd : Boolean }>();
+  let markdownBody = ref()
+  let text = ref<string>()
+  function test(t) {
+    text.value = t
+  }
+  let emit = defineEmits<{
+    (e : 'update', mdText : string) : void
+  }>()
+  watch(() => prop.showMd, () => {
+    if (!prop.showMd && prop.mdText != text.value) {
+      emit("update", text.value)
+    } else {
+      text.value = prop.mdText
     }
-    window.addEventListener('scroll', scrollFn())
+  })
+  let mdHtml = ref<string>('')
+  let tocShow = ref<boolean>(false);
+  let tocStyle = computed<'none' | 'inline'>(() => tocShow.value ? 'inline' : 'none');
+  let scroll = scrollFn();
+  // 监听滚动事件现实按钮
+  let showBackTop = ref<boolean>(false);
+
+  useEventListener(window, 'hashchange', closeToc)
+  useEventListener(window, 'scroll', scroll)
+  onMounted(() => {
+    document.documentElement.style.cssText += `scroll-behavior: smooth`;
+    // 用于非初次加载,此时prop已经有值直接渲染
+    prop.mdText && init();
+    // 监听md文本变化
+    // 初次加载时因异步获取,获取成功后激活watch
+    watch(prop, () => {
+      init();
+      backTop();
+    })
+    watch(tocShow, () => {
+      let toc = document.getElementsByClassName('table-of-contents')[0] as HTMLElement;
+      toc.style.top = (document.getElementsByClassName('markdown-head')[0] as HTMLElement).offsetTop - 10 + 'px';
+      document.body.style.overflow = tocShow.value ? 'hidden' : 'auto';
+    })
+  })
+
+  function closeToc() : void {
+    if (tocShow) tocShow.value = false;
   }
 
+  // 滚动事件
+  function scrollFn() {
+    let setTimeCancel : NodeJS.Timeout | null;
+    return function () {
+      if (setTimeCancel) clearTimeout(setTimeCancel);
+      setTimeCancel = setTimeout(() => {
+        var h = document.documentElement.scrollTop || document.body.scrollTop || this.scrollTop;
+        showBackTop.value = h > 100 ? true : false;
+        setTimeCancel = null
+      }, 200)
+    }
+  }
   function preAddCopy() {
-    console.log('preAddCopy');
     let pres = document.querySelectorAll('pre');
     if (!pres.length) return;
     function secondly() {
@@ -59,12 +97,22 @@
     }
     for (var i = 0; i < pres.length; i++) {
       let pre = pres[i]
-      pre.querySelector('#copyBtn').addEventListener('click', function (e) {
+      let btn = pre.getElementsByClassName('copyBtn')[0];
+      if (!btn) continue;
+      btn.setAttribute('value', '复制代码');
+      btn.addEventListener('click', function (e) {
         // 剪切版APi不存在时调用老API
         if (!navigator || !navigator.clipboard || !navigator.clipboard.writeText) secondly();
+
         let text = pre.querySelector('code').innerText;
         navigator.clipboard.writeText(text)
-          .then(() => alert('复制成功'))
+          .then(() => {
+            this.setAttribute('value', '复制成功');
+            setTimeout(() => {
+              this.setAttribute('value', '复制代码')
+            }, 3000)
+
+          })
           .catch(() => secondly.call(pre));
       })
     }
@@ -73,40 +121,40 @@
     e.target.nodeName == 'A' && (tocShow.value = false)
   }
   // 外部连接改为新标签页代开
-  function updateTargetOpenModule() {
-    console.log('updateTargetOpenModule');
+  function updateTargetModule() {
     let h = location.href.toString().slice(0, 10);
     let aList = document.querySelectorAll('a');
     if (!aList.length) return;
     aList.forEach(a => {
-      console.log(!~a.href.toString().indexOf(h), a.href.toString());
-      !~a.href.toString().indexOf(h) && (a.target = '_blank')
+      if (!~a.href.toString().indexOf(h)) {
+        (a.target = '_blank');
+      } else {
+        a.addEventListener('click', (e) => {
+          e.preventDefault()
+          let h = a.href
+          let s = h.indexOf('#')
+          let id = h.slice(s + 1);
+          let el = document.getElementById(id);
+          if (!el) return;
+          window.scroll(0, el.offsetTop);
+
+        })
+      }
     }
     )
   }
   function backTop() {
     window.scrollTo(0, 0);
   }
-  function init() {
+  async function init() {
     // 手动加目录
     let t = prop.mdText + '\r\n[[toc]]';
     mdHtml.value = md.render(t)
-    nextTick(() => {
-      preAddCopy()
-      updateTargetOpenModule()
-    })
+    // 等dom渲染结束,再允许dom操作
+    await nextTick();
+    preAddCopy();
+    updateTargetModule();
   }
-  onMounted(() => {
-    // 初次载入
-    prop.mdText && init();
-    // 监听md文本变化
-    cancel = watch(prop, () => {
-      init()
-    })
-  })
-  onUnmounted(() => {
-    (typeof cancel === 'function') && cancel()
-  })
 </script>
 
 <style lang="scss" scoped>
@@ -141,8 +189,12 @@
   .markdown-box {
     border-radius: $borderRadius-default;
     border: 1px #d0d7de solid;
-    overflow: hidden;
     width: 100%;
+    height: 100%;
+  }
+
+  .mask {
+    z-index: 4;
   }
 
   //====小组件== 
@@ -160,9 +212,15 @@
     height: 48px;
     cursor: pointer;
     transition: .25s ease;
+    opacity: 0;
 
     svg {
       transition: .25s ease;
+    }
+
+    &.showBack {
+      opacity: 1;
+      animation: Q .8s linear;
     }
 
     &:hover {
@@ -188,15 +246,34 @@
     }
   }
 
+  @keyframes Q {
+    30% {
+      transform: scale(0.8, 1.1);
+    }
+
+    60% {
+      transform: scale(1.1, 0.8);
+    }
+  }
+
+
+
   // 头部
   .markdown-head {
     position: sticky;
+    z-index: 2;
+    background-color: white;
     top: 0px;
     left: 0px;
     padding: 8px;
     border-bottom: 1px #d0d7de solid;
+    display: flex;
+    align-items: center;
+
+
 
     .icon {
+      flex: none;
       cursor: pointer;
       font-size: $fontSize-default;
       padding: 8px;
@@ -206,6 +283,17 @@
         background-color: $color-bg-default;
       }
     }
+  }
+
+
+  .textarea {
+    width: 100%;
+    color: $color-font-default;
+    font-family: 'Fira Code' !important;
+    background-color: $color-bg-default;
+    background-image: linear-gradient(90deg, rgba(72, 42, 10, .05) 5%, rgba(72, 42, 10, 0) 5%), linear-gradient(1turn, rgba(72, 42, 10, .05) 5%, rgba(72, 42, 10, 0) 0);
+    background-size: 20px 20px;
+    background-position: 50%;
   }
 
   // 主体
@@ -223,6 +311,7 @@
     background-position: 50%;
     text-shadow: none;
     box-sizing: border-box;
+
 
     &:deep() {
       * {
@@ -247,15 +336,16 @@
       // ==========toc===========
       .table-of-contents {
         position: absolute;
-        top: -10px;
+        top: 0px;
         left: 40px;
         padding: $fontSize-default;
+        padding-left: $fontSize-default*2;
         padding-bottom: 0;
         background-color: $color-bg-default;
         border-radius: $borderRadius-default;
         box-shadow: 0 0 10px gray;
         display: v-bind(tocStyle);
-        z-index: 10;
+        z-index: 5;
 
         &>ul {
           list-style: cjk-ideographic;
@@ -279,6 +369,7 @@
 
 
       // =================标题==============
+
       h1,
       h2,
       h3,
@@ -289,6 +380,8 @@
         line-height: 1.25;
         margin: $fontSize-2 0 $fontSize-default;
         color: $color-font-title;
+
+
       }
 
       h1,
@@ -379,6 +472,10 @@
         margin-right: initial;
       }
 
+      a>* {
+        cursor: pointer;
+      }
+
       a {
         color: $color-a-default;
         padding-left: .25em;
@@ -395,8 +492,6 @@
         background-size: .75em;
         background-repeat: no-repeat;
         cursor: pointer;
-
-
 
 
         &.header-anchor {
@@ -531,7 +626,7 @@
           color: $color-1;
         }
 
-        #copyBtn {
+        .copyBtn {
           position: absolute;
           top: 8px;
           right: 15px;
@@ -540,7 +635,11 @@
           cursor: pointer;
 
           &::before {
-            content: '复制代码';
+            content: attr(value);
+          }
+
+          &:active {
+            background-color: $color-1;
           }
         }
 
@@ -552,6 +651,10 @@
 
       code {
         font-size: .85em;
+        padding-left: 4px;
+        padding-right: 4px;
+        margin-left: 4px;
+        margin-right: 4px;
         white-space: break-spaces;
         background-color: $color-bg-code;
         color: lighten($color-font-default, 35%);
@@ -564,6 +667,16 @@
       }
 
       // ========格式化===========
+      hr:has(+hr) {
+        border: none;
+        margin: 0;
+      }
+
+      hr+hr {
+        border: none;
+        margin: 0;
+        page-break-after: always;
+      }
 
       sup sub {
         font-size: .75em;
@@ -583,10 +696,8 @@
       }
 
       hr {
-        height: .25em;
         margin: $fontSize-default*1.5 0;
-        background-color: $color-bg-hr;
-        border: none;
+        border-top: .25em solid $color-bg-hr;
       }
 
 
@@ -664,6 +775,13 @@
       }
 
       // ===========结尾=========
+    }
+  }
+
+  // 打印时
+  @media print {
+    .markdown-head {
+      display: none;
     }
   }
 </style>
