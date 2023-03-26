@@ -7,7 +7,7 @@
 
   const tipsKey = "MyMemoTipsKey"
   let main = useMainStore()
-  let curdTip = getCurd<Tip>('tip')
+  let curdTip = getCurd<Tip>('tip', true)
   let { list: tipList } = useRefresh<Tip>(curdTip, tipsKey)
   // 用数字去判断分区,扩展性更强
   let tipNum = ref<number>(0);

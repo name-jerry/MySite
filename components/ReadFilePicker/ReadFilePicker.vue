@@ -1,10 +1,6 @@
 <template>
   <div class="picker-wrap" @dragenter.prevent @dragover.prevent @drop.prevent="handleFiles($event.dataTransfer.files)">
-    <!-- 本体样式太丑,掩藏 -->
-    <component is='input' id='input' type="file" multiple
-      @change="handleFiles(($event.target as HTMLInputElement).files)" v-show="false">
-    </component>
-    <slot></slot>
+    <!-- 主体 -->
     <div class="top"><text class="title">文件列表</text><text class="sub">已选:{{files.length}}</text></div>
     <!-- 显示选择的文件列表 -->
     <div class="list-wrap" @click='remove' :title="files.length>0?'':'支持拖拽'">
@@ -17,11 +13,17 @@
       </template>
     </div>
     <view class="btns">
-      <!-- 链接input -->
+      <!-- 链接input[type="file"] -->
       <component is='label' for="input" class="btn hover-shadow-btn">选择文件
       </component>
       <button @click='upload' class="btn hover-shadow-btn">开始上传</button>
     </view>
+    <!-- input[type="file"]本体掩藏,通过label标签连接 -->
+    <component is='input' id='input' type="file" multiple
+      @change="handleFiles(($event.target as HTMLInputElement).files)" v-show="false">
+    </component>
+    <!-- 提供一个默认接口 -->
+    <slot></slot>
   </div>
 </template>
 
@@ -45,6 +47,18 @@
         })
         continue
       };
+      let isContinue : boolean;
+      main.artList.forEach(
+        (a : Article) => {
+          if (a.title == file.name) {
+            isContinue = true;
+            uni.showToast({
+              title: `同名文件不可上传`,
+              icon: 'error'
+            })
+          };
+        })
+      if (isContinue) continue;
       let item = { progress: 0, file }
       res.push(item)
     }
@@ -58,14 +72,19 @@
       const reader = new FileReader();
       reader.onload = async function (e) {
         let a : Article = {
+          _id: 'offLine',
           sub: file.name,
           title: file.name,
           content: e.target.result as string
         }
-        let res = await curdArt("add", a)
-        a._id = res.id;
+        // 在线是同步到网络
+        if (main.isOnLine) {
+          let res = await curdArt("add", a)
+          a._id = res.id;
+        }
         main.artList.push(a);
         item.progress = 100;
+
         if (main.artList.length == fl + ml) {
           uni.showToast({
             title: "上传成功"

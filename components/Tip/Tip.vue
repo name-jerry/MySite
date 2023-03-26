@@ -1,3 +1,12 @@
+<template>
+  <view class="input-wrap" :class="{ end: copy.is_end,'update-end':updateEnd,remove:isRemove}">
+    <checkbox type="checkbox" class="check" :checked='copy.is_end' @click="check" />
+    <textarea auto-height :class="{'hover-shadow-input':isActive}" @focus="isActive= true" @blur="blur"
+      v-model="copy.title" class="input"></textarea>
+    <view v-show="isActive" class="remove-btn" @tap="remove"></view>
+  </view>
+</template>
+
 <script setup lang="ts">
   import { ref, reactive } from "vue";
   import type { Tip } from "@/type";
@@ -35,14 +44,7 @@
   }
 </script>
 
-<template>
-  <view class="input-wrap" :class="{ end: copy.is_end,'update-end':updateEnd,remove:isRemove}">
-    <checkbox type="checkbox" class="check" :checked='copy.is_end' @click="check" />
-    <textarea auto-height :class="{'hover-shadow-input':isActive}" @focus="isActive= true" @blur="blur"
-      v-model="copy.title" class="input"></textarea>
-    <view v-show="isActive" class="remove-btn" @tap="remove"></view>
-  </view>
-</template>
+
 
 <style lang="scss" scoped>
   .input-wrap.update-end {

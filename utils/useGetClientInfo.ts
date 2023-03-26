@@ -1,5 +1,4 @@
 import { ComponentInternalInstance, getCurrentInstance, onMounted, onUnmounted, Ref, ref } from "vue"
-import { useEventListener } from "./event"
 interface ClientInfo {
   left : number;
   right : number;
@@ -13,8 +12,7 @@ interface ClientInfo {
 let { windowWidth: wW, windowHeight: wH } = uni.getSystemInfoSync() as UniNamespace.GetSystemInfoResult
 /** 
 @param{string}selector 一个css选择器
-@param{ComponentInternalInstance}self 当前组件实例对象
-@returns Promise 返回组件相对视口位置,自身及设备高宽,
+@return {Ref<ClientInfo>}  通过{clientInfo} 解构出的clientInfo包含组件相对视口位置,自身及设备高宽的信息的对象,在每次窗口调整时自动更新
 */
 function useGetClientInfo(selector : string) : { clientInfo : Ref<ClientInfo> } {
   const self : ComponentInternalInstance = getCurrentInstance() as ComponentInternalInstance
@@ -31,6 +29,7 @@ function useGetClientInfo(selector : string) : { clientInfo : Ref<ClientInfo> } 
       })
   }
   onMounted(() => {
+    updateClientInfo()
     uni.onWindowResize(updateClientInfo);
   })
   onUnmounted(() => {

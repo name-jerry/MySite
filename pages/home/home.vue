@@ -17,6 +17,7 @@
     myMemo: { value: true, lable: "计划表" },
     filePicker: { value: false, lable: "上传文章" },
     login: { value: false, lable: "登录" },
+    swipe: { value: true, lable: "轮播图" },
     set: { value: false, lable: "设置" },
   })
   // 设置
@@ -47,6 +48,7 @@
       show.login.value = true
     }
   })
+
   // =========挂载卸载============
   onMounted(() => {
     initSet()
@@ -77,11 +79,15 @@
       <Login class="login" v-show="show.login.value">
         <view class="closeBtn" @tap="show.login.value=false"></view>
       </Login>
+      <SwipeView v-show="show.swipe.value" class="swipe-wrap">
+        <view class="closeBtn" @tap.stop="show.swipe.value=false"></view>
+      </SwipeView>
       <ReadFilePicker v-show="show.filePicker.value" class="file-picker">
         <view class="closeBtn" @tap.stop="show.filePicker.value=false"></view>
       </ReadFilePicker>
     </view>
     <TagsWrap class="tags-wrap"></TagsWrap>
+
     <!-- 固定信息部分 -->
     <SearchWrap class=' container search-wrap'>
     </SearchWrap>
@@ -98,13 +104,38 @@
   .body {
     height: 100vh;
     display: grid;
-    grid-template-rows: 1fr auto 1fr;
+    grid-template-rows: 1fr auto auto 1fr;
     gap: 10px;
     place-items: center;
     font-size: 16px;
     overflow: auto;
     position: relative;
+  }
 
+  .closeBtn {
+    height: 30px;
+    width: 30px;
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    z-index: 2;
+    cursor: pointer;
+
+    &::before,
+    &::after {
+      content: '';
+      width: 2px;
+      height: 60%;
+      background: var(--color-4);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    &::before {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
   }
 
   .module {
@@ -114,62 +145,42 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 30px;
+  }
+
+  .memo,
+  .file-picker,
+  .swipe-wrap {
     --color-white-1: hsl(207, 45%, 82%);
     --color-white-2: hsl(207, 45%, 85%);
     --color-shadow-1: #7496ab;
     --color-shadow-2: #a7c6dc;
-
-    .closeBtn {
-      height: 30px;
-      width: 30px;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-      z-index: 2;
-      cursor: pointer;
-
-      &::before,
-      &::after {
-        content: '';
-        width: 2px;
-        height: 60%;
-        background: var(--color-4);
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%) rotate(45deg);
-      }
-
-      &::before {
-        transform: translate(-50%, -50%) rotate(-45deg);
-      }
-    }
-
-    .memo,
-    .file-picker {
-      height: 300px;
-      max-height: 300px;
-      border-radius: 12px;
-      background-color: var(--color-bg-quote);
-      box-shadow: -1px -1px 2px var(--color-white-1),
-        inset 1px 1px 1px var(--color-white-2),
-        2px 2px 4px var(--color-shadow-1),
-        inset -1px -1px 1px var(--color-shadow-2);
-    }
+    border-radius: 12px;
+    background-color: var(--color-bg-quote);
+    box-shadow: -1px -1px 2px var(--color-white-1),
+      inset 1px 1px 1px var(--color-white-2),
+      2px 2px 4px var(--color-shadow-1),
+      inset -1px -1px 1px var(--color-shadow-2);
+  }
 
 
 
-    .login {
-      height: 300px;
-    }
+  .memo,
+  .file-picker,
+  .swipe-wrap {
+    height: 300px;
+    max-height: 300px;
+  }
 
-
+  .login {
+    height: 300px;
   }
 
   .tags-wrap {
     grid-row: 2;
     z-index: 3;
   }
+
+
 
   .footer {
     grid-row: -2;

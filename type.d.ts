@@ -54,7 +54,12 @@ interface PostItem {
   time : string;
   value : string;
 }
-
+type SwipeItem = {
+  imgUrl : string,
+  title : string,
+  sub : string,
+  href : string,
+}
 
 type CURD = "get" | "add" | "remove" | "update"
 export {
@@ -65,5 +70,6 @@ export {
   PostItem,
   Option,
   CURD,
-  Article
+  Article,
+  SwipeItem
 }

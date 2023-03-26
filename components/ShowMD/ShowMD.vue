@@ -7,7 +7,7 @@
     </div>
     <div ref='markdownBody' class="markdown-body" v-show="!prop.showMd" v-html="mdHtml" @click="clickToc">
     </div>
-    <MyTextarea class="textarea" :text="text" @update='test' v-show="prop.showMd"></MyTextarea>
+    <MyTextarea class="textarea" :text="text" @update='areaUpdate' v-show="prop.showMd"></MyTextarea>
     <div class="backTop" :class=' {showBack:showBackTop}' @click="backTop">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
         <path fill-rule="evenodd"
@@ -21,46 +21,48 @@
 
 <script setup lang="ts">
   import md from './markdownIt.js'
-  import { ref, reactive, onMounted, computed, watch, nextTick } from "vue";
-  import { useEventListener } from "@/utils/event"
+  import { ref, onMounted, computed, watch, nextTick } from "vue";
+  import { useEventListener } from "@/utils/event";
   let prop = defineProps<{ mdText : string, showMd : Boolean }>();
-  let markdownBody = ref()
-  let text = ref<string>()
-  function test(t) {
-    text.value = t
-  }
   let emit = defineEmits<{
     (e : 'update', mdText : string) : void
   }>()
-  watch(() => prop.showMd, () => {
-    if (!prop.showMd && prop.mdText != text.value) {
-      emit("update", text.value)
-    } else {
-      text.value = prop.mdText
-    }
-  })
+  let markdownBody = ref()
+  let text = ref<string>()
+  function areaUpdate(t : string) {
+    text.value = t
+    emit("update", text.value)
+  }
+
   let mdHtml = ref<string>('')
   let tocShow = ref<boolean>(false);
   let tocStyle = computed<'none' | 'inline'>(() => tocShow.value ? 'inline' : 'none');
   let scroll = scrollFn();
   // 监听滚动事件现实按钮
   let showBackTop = ref<boolean>(false);
-
   useEventListener(window, 'hashchange', closeToc)
   useEventListener(window, 'scroll', scroll)
   onMounted(() => {
-    document.documentElement.style.cssText += `scroll-behavior: smooth`;
+    watch(() => prop.showMd, () => {
+      if (!prop.showMd && prop.mdText != text.value) {
+        emit("update", text.value)
+      } else {
+        text.value = prop.mdText
+      }
+    })
+    document.documentElement.style.cssText += `scroll-behavior: smooth;scroll-padding-top:50px`;
     // 用于非初次加载,此时prop已经有值直接渲染
     prop.mdText && init();
     // 监听md文本变化
-    // 初次加载时因异步获取,获取成功后激活watch
+    // 初次加载时因异步获取,prop值未定义,获取成功后激活watch
     watch(prop, () => {
       init();
       backTop();
     })
+    // 动态设置目录位置
     watch(tocShow, () => {
-      let toc = document.getElementsByClassName('table-of-contents')[0] as HTMLElement;
-      toc.style.top = (document.getElementsByClassName('markdown-head')[0] as HTMLElement).offsetTop - 10 + 'px';
+      let tocEl = document.getElementsByClassName('table-of-contents')[0] as HTMLElement;
+      tocEl.style.top = (document.getElementsByClassName('markdown-head')[0] as HTMLElement).offsetTop - 10 + 'px';
       document.body.style.overflow = tocShow.value ? 'hidden' : 'auto';
     })
   })
@@ -128,17 +130,17 @@
     aList.forEach(a => {
       if (!~a.href.toString().indexOf(h)) {
         (a.target = '_blank');
-      } else {
-        a.addEventListener('click', (e) => {
-          e.preventDefault()
-          let h = a.href
-          let s = h.indexOf('#')
-          let id = h.slice(s + 1);
-          let el = document.getElementById(id);
-          if (!el) return;
-          window.scroll(0, el.offsetTop);
+        // } else {
+        // a.addEventListener('click', (e) => {
+        // e.preventDefault()
+        // let h = a.href
+        // let s = h.indexOf('#')
+        // let id = h.slice(s + 1);
+        // let el = document.getElementById(id);
+        // if (!el) return;
+        // window.scroll(0, el.offsetTop);
 
-        })
+        // })
       }
     }
     )
@@ -286,32 +288,30 @@
   }
 
 
+  .markdown-body,
   .textarea {
     width: 100%;
+    padding: $fontSize-default*2;
+    padding-top: $fontSize-default;
     color: $color-font-default;
-    font-family: 'Fira Code' !important;
+    font-size: $fontSize-default;
+    line-height: 1.5;
     background-color: $color-bg-default;
     background-image: linear-gradient(90deg, rgba(72, 42, 10, .05) 5%, rgba(72, 42, 10, 0) 5%), linear-gradient(1turn, rgba(72, 42, 10, .05) 5%, rgba(72, 42, 10, 0) 0);
     background-size: 20px 20px;
     background-position: 50%;
+    position: relative;
+    text-shadow: none;
+    box-sizing: border-box;
+  }
+
+  .textarea {
+    font-family: 'Fira Code' !important;
   }
 
   // 主体
   .markdown-body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    position: relative;
-    line-height: 1.5;
-    color: $color-font-default;
-    font-size: $fontSize-default;
-    padding: $fontSize-default*2;
-    padding-top: $fontSize-default;
-    background-color: $color-bg-default;
-    background-image: linear-gradient(90deg, rgba(72, 42, 10, .05) 5%, rgba(72, 42, 10, 0) 5%), linear-gradient(1turn, rgba(72, 42, 10, .05) 5%, rgba(72, 42, 10, 0) 0);
-    background-size: 20px 20px;
-    background-position: 50%;
-    text-shadow: none;
-    box-sizing: border-box;
-
 
     &:deep() {
       * {
@@ -380,7 +380,6 @@
         line-height: 1.25;
         margin: $fontSize-2 0 $fontSize-default;
         color: $color-font-title;
-
 
       }
 

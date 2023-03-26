@@ -1,12 +1,12 @@
 <template>
   <view class="search-wrap">
-    <view class="search-box hover-shadow-input" :class="{'blank':!searchWord&&prop.autoShrink}">
+    <view class="search-box hover-shadow-input" :class="{'blank':isBlank}">
       <input type="text" class="search" confirm-type="search" @confirm="enter" v-model='searchWord' @blur="blur"
         @focus="focusInput" />
       <Options class="options" :class="{show:showOptions}" :options='optionList' :show-mask='false' @select='select'>
       </Options>
-      <picker @change="(e:CustomEvent)=>{ index = e.detail.value}" mode="selector" :range='toolList' range-key="label"
-        class="tools">
+      <picker @cancel="shrink=true" @change="pickerChange" @tap="pickerTap" mode="selector" :range='toolList'
+        range-key="label" class="tools">
         <text>{{toolList[index].label}}</text>
       </picker>
       <a ref='btn' :href='toolList[index].value+searchWord' @tap='search' target='_blank' class="btn hover-shadow-btn">
@@ -17,12 +17,13 @@
 </template>
 
 <script setup lang='ts'>
-  import { ref, reactive, onMounted, onUnmounted, watch } from "vue";
+  import { ref, reactive, onMounted, onUnmounted, watch, computed } from "vue";
   import useMainStore from "@/stores/useMainStore"
   const main = useMainStore()
   let prop = defineProps < {
     autoShrink ? : boolean
   } > ()
+  let shrink = ref < boolean > (true)
   const optionsKey = 'optionsKey'
   let toolList = reactive < { label: string, value: string } [] > ([
     { label: 'Can I Use', value: 'https://caniuse.com/?search=' },
@@ -34,7 +35,17 @@
   let index = ref < number > (0)
   let optionList = ref < string[] > ([]);
   let showOptions = ref < boolean > (false);
+  let isBlank = computed(() => !searchWord.value && prop.autoShrink && shrink.value)
   let btn = ref()
+
+  function pickerChange(e: CustomEvent): void {
+    index.value = e.detail.value;
+    shrink.value = true
+  }
+
+  function pickerTap(): void {
+    shrink.value = false
+  }
 
   function focusInput() {
     showOptions.value = true
@@ -48,8 +59,16 @@
     showOptions.value = false
   }
 
-  function search() {
-    let v = searchWord.value.replace(/(^\s+)|(\s+$)/g, '')
+  function search(e: CustomEvent): void {
+    if (isBlank.value) {
+      e.preventDefault();
+      uni.showToast({
+        title: '输入文字',
+        icon: "none"
+      })
+      return
+    }
+    let v = searchWord.value.replace(/(^\s+)|(\s+$)/g, '');
     if (v == '') return;
     addOption(v);
   }

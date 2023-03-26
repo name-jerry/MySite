@@ -9,13 +9,14 @@
 </template>
 
 <script setup lang='ts'>
-  import { ref, reactive, onMounted, onUnmounted, computed, watch, watchEffect } from "vue"
-  import type { Article } from "../../type"
+  import { ref, reactive, onMounted, onUnmounted, computed } from "vue"
+  import type { Article } from "@/type"
   import { getCurd } from "@/utils/getCurd"
   import useMainStore from "@/stores/useMainStore"
-  let main = useMainStore();
+  // APP处读取artList内容,此处的getCurd受main.isOnLine影响
   let curdArt = getCurd < Article > ('articles');
-  let tagList = computed(() => main.artList.map(setTag));
+  let main = useMainStore();
+  let tagList = computed(() => main.artList.map(setTagByArticle));
   let tagsWrapStyle = reactive < {
     [key: string]: string,
   } > ({
@@ -58,7 +59,7 @@
     isMore.value = !isMore.value
   }
 
-  function setTag(v: Article) {
+  function setTagByArticle(v: Article) {
     return {
       _id: v._id,
       href: "/pages/Article/Article?title=" + v.title,
@@ -70,7 +71,7 @@
   function update(a: Article) {
     curdArt("update", a);
     const i: number = main.artList.findIndex((v) => {
-      return v._id == a._id
+      return v._id == "offLine" ? v.title == a.title : v._id == a._id
     })
     if (~i) main.artList[i] = { ...main.artList[i], ...a };
   }
@@ -78,7 +79,7 @@
   function remove(a: Article) {
     curdArt('remove', a)
     const i: number = main.artList.findIndex((v) => {
-      return v._id == a._id
+      return v._id == "offLine" ? v.title == a.title : v._id == a._id
     })
     if (~i) main.artList.splice(i, 1);
   }

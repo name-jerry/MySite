@@ -4,11 +4,11 @@
     "username", "password", "role"
   ],
   "permission": {
-    "create": true,
+    "create": false,
     "read": true,
-    "update": true,
-    "delete": true,
-    "count": true
+    "update": false,
+    "delete": false,
+    "count": false
   },
   "properties": {
     "_id": {
@@ -166,10 +166,7 @@
         "collection": "uni-id-roles",
         "field": "role_id as value, role_name as text"
       },
-      "foreignKey": "uni-id-roles.role_id",
-      "permission": {
-        "write": false
-      }
+      "foreignKey": "uni-id-roles.role_id"
     },
     "wx_unionid": {
       "bsonType": "string",

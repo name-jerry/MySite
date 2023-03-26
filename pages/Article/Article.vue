@@ -8,7 +8,8 @@
         <view class="btns">
           <navigator class="back" open-type='redirect' url="/pages/Home/Home">首页</navigator>
           <button class="updateBtn" @tap="showMd=!showMd">{{showMd?'预览':'编辑'}}</button>
-          <button class="saveBtn " @tap="save" v-show="showSave&&!showMd">保存</button>
+          <button class="saveBtn " @tap="save">保存</button>
+          <button class="recoverBtn " @tap="recover" v-show="showSave&&!showMd">恢复</button>
 
           <picker v-if='main.artList[0]' class="pickerBtn" mode="selector" :range="main.artList" range-key="title"
             :value='artIndex' @change="artIndex=$event.detail.value">
@@ -41,6 +42,7 @@
     mdText.value = text;
     showSave.value = true;
   };
+
   onLoad((q) => {
     query = q as { title : string }
   });
@@ -52,25 +54,43 @@
     }, { immediate: true })
   })
   async function save() {
-    let allowSave = false
-    let a : Article = main.artList[artIndex.value];
-    if (!allowSave) {
-      uni.showModal({
-        title: '提示',
-        content: '读写成本太高,暂不支持保存',
-        confirmText: '恢复',
-        cancelText: '不恢复',
-        success(e) {
-          if (!e.confirm) return;
-          mdText.value = a.content
-          showSave.value = false
-        }
-      })
-    } else {
-      a.content = mdText.value;
+    let a = currentArt.value
+    a.content = mdText.value;
+    if (main.isOnLine) {
       curdArt("update", a)
-      showSave.value = false
+    } else {
+      // 获取文件内容，例如从服务器获取
+      // 这里假设你已经在一个字符串变量中获得了文件内容
+      var fileContent = a.content;
+      // 将字符串转换成 Blob 对象
+      var blob = new Blob([fileContent], { type: "text/plain" });
+      // 创建 URL 字符串
+      var url = URL.createObjectURL(blob);
+      // 创建 a 标签，设置 href 和 download 属性
+      var link = document.createElement("a");
+      link.href = url;
+      link.download = a.title;
+      // 将 a 标签添加到文档中并触发下载
+      document.body.appendChild(link);
+      link.click();
+      // 清理临时 URL 对象
+      URL.revokeObjectURL(url);
+      link.remove()
     }
+    showSave.value = false
+  }
+  function recover() {
+    uni.showModal({
+      title: '提示',
+      content: '是否恢复改动',
+      confirmText: '恢复',
+      cancelText: '不恢复',
+      success(e) {
+        if (!e.confirm) return;
+        mdText.value = currentArt.value.content;
+        showSave.value = false;
+      }
+    })
   }
   function initArtIndex() {
     let i : number = -1;
@@ -133,19 +153,20 @@
   }
 
   .search-wrap {
+    background-color: white;
     position: fixed;
     right: 20px;
     top: 50%;
     z-index: 2;
   }
 
-  .updateBtn {}
+
 
   .pickerBtn:not(.a) {
     margin-left: auto;
   }
 
-  .saveBtn {
+  .recoverBtn {
     margin-right: auto;
   }
 

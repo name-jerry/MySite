@@ -2,15 +2,18 @@
   import { onLaunch, onShow } from '@dcloudio/uni-app';
   import { checkLogin } from "@/utils/checkLogin"
   import useMainStore from "@/stores/useMainStore"
-  import { getCurd } from "@/utils/getCurd"
   import { useRefresh } from "@/utils/useRefresh"
-  import type { Article } from '@/type';
+  import { getCurd } from "@/utils/getCurd"
+  import type { Article } from "@/type"
   // 当前文章下标数据的key
+  // 不受main.isOnLine影响,获取在线数据并赋值main.artList
   const articleKey = "articleKey";
-  let curdArt = getCurd<Article>('articles');
+  let curdArt = getCurd<Article>('articles', true);
   let { list } = useRefresh<Article>(curdArt, articleKey);
   let main = useMainStore();
   main.artList = list
+
+
 
   onLaunch(() => {
     console.log("App onLaunch");
@@ -51,8 +54,6 @@
 </script>
 
 <style lang="scss">
-  @import url('@/static/font/fira_code.css');
-
   page {
     /* uniapp的html的font-size会随着设备以及宽度的变化而变化,这里设置没用 */
     /* font-size: 10px; */
@@ -110,6 +111,10 @@
         var(--color-1),
         var(--color-3) 51%,
         var(--color-1));
+    --gradient-3: linear-gradient(180deg,
+        var(--color-1),
+        var(--color-3) 51%,
+        var(--color-1));
   }
 
 
@@ -128,9 +133,13 @@
   @font-face {
     font-family: 'iconfont';
     /* Project id 3837728 */
-    src: url('//at.alicdn.com/t/c/font_3837728_x1ymk13npx.woff2?t=1678626400055') format('woff2'),
-      url('//at.alicdn.com/t/c/font_3837728_x1ymk13npx.woff?t=1678626400055') format('woff'),
-      url('//at.alicdn.com/t/c/font_3837728_x1ymk13npx.ttf?t=1678626400055') format('truetype');
+    src: url('/static/font/iconfont.ttf');
+  }
+
+  @font-face {
+    font-family: 'Fira Code';
+    src: url('/static/font/FiraCode.woff2') format('woff2'),
+      url("/static/font/FiraCode.woff") format("woff");
   }
 
   [class*="icon"] {

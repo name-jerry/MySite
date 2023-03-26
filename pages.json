@@ -5,13 +5,6 @@
     }, {
       "path": "pages/Article/Article",
       "needLogin": true
-    }, {
-      "path": "pages/Recent/Recent",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      },
-      "needLogin": true
     }
   ],
   "globalStyle": {
