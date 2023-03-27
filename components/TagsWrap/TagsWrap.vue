@@ -1,7 +1,11 @@
 <template>
   <view class="tags-wrap container" :style="tagsWrapStyle">
-    <template v-for="(item,i)  in tagList" :key="item._id">
-      <Tag v-if="i<showTagsCount " class='tag-box hover-shadow-btn' :tag='item' @update='update' @remove="remove"></Tag>
+    <template v-for="(item,i)  in tagList" :key="item.title">
+      <Tag :data-title="item.title" draggable="true" @dragstart='dragstart' @dragend='dragend' @dragenter='dragenter'
+        @dragover='$event.preventDefault()' v-if="i<showTagsCount" :class="{dragging:item.title==draggingItem?.title}"
+        class='tag-box hover-shadow-btn' :tag='item' @update='update' @remove="remove" @download='download'>
+        <view class="count " v-show="item.updateCount">{{'未下载'}}</view>
+      </Tag>
     </template>
     <view v-show="showBtn" class="add tag-box hover-shadow-btn" :class="{'is-more':isMore}" @tap.native.stop='showMore'>
     </view>
@@ -10,9 +14,10 @@
 
 <script setup lang='ts'>
   import { ref, reactive, onMounted, onUnmounted, computed } from "vue"
-  import type { Article } from "@/type"
+  import type { Article, Tag } from "@/type"
   import { getCurd } from "@/utils/getCurd"
   import useMainStore from "@/stores/useMainStore"
+  import { downloadArt } from "@/tools/dowloadArt"
   // APP处读取artList内容,此处的getCurd受main.isOnLine影响
   let curdArt = getCurd < Article > ('articles');
   let main = useMainStore();
@@ -27,6 +32,65 @@
   let isMore = ref < boolean > (false)
   let showBtn = computed(() => tagList.value.length > (2 * column.value - 1))
   let column = ref < number > (0);
+  let draggingIndex = ref < number > (-1)
+  let draggingItem = ref < Tag > ()
+
+  // =========挂载卸载============
+  onMounted(() => {
+    updateShowCount()
+    uni.onWindowResize(updateShowCount)
+  })
+  onUnmounted(() => {
+    uni.offWindowResize(updateShowCount)
+  })
+  // =========拖拽=============
+  function dragstart(event) {
+    let target = event.target;
+    let title = target.dataset.title;
+    let i = main.artList.findIndex((v: Tag) => v.title == title);
+    draggingIndex.value = i
+    draggingItem.value = main.artList[i]
+  }
+
+  // 监听拖拽结束事件
+  function dragend() {
+    draggingIndex.value = -1;
+    draggingItem.value = null;
+  }
+  // 监听进入事件,实现一个空出位置的效果
+  function dragenter(event) {
+    // 目标对象
+    let target = event.currentTarget;
+    let title = target.dataset.title;
+    let targetIndex = main.artList.findIndex((v: Tag) => v.title == title);
+    if (title == draggingItem.value.title) return;
+    // 计算要移动的方向和距离
+    const direction = targetIndex > draggingIndex.value ? 1 : -1;
+    const distance = Math.abs(targetIndex - draggingIndex.value);
+    // 遍历起点和终点间所有项目,将所有项与下一项互换
+    for (let i = 0; i < distance; i++) {
+      const swapIndex = draggingIndex.value + direction * i;
+      const nextIndex = swapIndex + direction;
+      // 互换
+      [main.artList[swapIndex], main.artList[nextIndex]] = [main.artList[nextIndex], main
+        .artList[swapIndex]
+      ];
+    }
+    // 移动之后更新拖拽项的下标
+    draggingIndex.value = targetIndex
+  }
+
+
+  // ========函数==============
+  function download(tag: Tag) {
+    const art = main.artList.find(a => a.title == tag.title)
+    if (!art) return uni.showToast({
+      title: '未知错误，保存失败',
+      icon: 'error'
+    });
+    downloadArt(art);
+    art.updateCount = false;
+  }
 
   function getShowColumn(): number {
     isMore.value = false
@@ -60,18 +124,20 @@
   }
 
   function setTagByArticle(v: Article) {
+    let { _id, title, sub, updateCount } = v
     return {
-      _id: v._id,
-      href: "/pages/Article/Article?title=" + v.title,
-      title: v.title,
-      sub: v.sub,
+      _id,
+      href: "/pages/Article/Article?title=" + title,
+      title,
+      sub,
+      updateCount
     }
   }
 
   function update(a: Article) {
     curdArt("update", a);
     const i: number = main.artList.findIndex((v) => {
-      return v._id == "offLine" ? v.title == a.title : v._id == a._id
+      return v._id == "offLine" ? v.sub == a.sub : v._id == a._id
     })
     if (~i) main.artList[i] = { ...main.artList[i], ...a };
   }
@@ -83,17 +149,26 @@
     })
     if (~i) main.artList.splice(i, 1);
   }
-  // =========挂载卸载============
-  onMounted(() => {
-    updateShowCount()
-    uni.onWindowResize(updateShowCount)
-  })
-  onUnmounted(() => {
-    uni.offWindowResize(updateShowCount)
-  })
 </script>
 
 <style scoped lang='scss'>
+  @keyframes glow {
+    from {
+      transform: scale(.95);
+      text-shadow: 0px 0px 1px hsl(146, 36%, 61%);
+    }
+
+    to {
+      transform: scale(1.1);
+      text-shadow: 4px 4px 1px hsl(146, 36%, 61%);
+    }
+  }
+
+  .dragging {
+    opacity: .5;
+    border: 1px dashed gray;
+  }
+
   .tags-wrap {
     display: grid;
     box-sizing: border-box;
@@ -109,6 +184,19 @@
     .tag-box {
       background-color: white;
       cursor: pointer;
+
+      .count {
+        position: absolute;
+        right: -10px;
+        top: -10px;
+        font-size: 10px;
+        font-weight: 100;
+        z-index: 4;
+        color: #fff;
+        transform-origin: center;
+        -webkit-text-stroke: 1px hsl(144, 37%, 49%);
+        animation: glow 1s ease-in-out infinite alternate;
+      }
     }
 
     .add {

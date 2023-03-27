@@ -7,7 +7,8 @@
     </div>
     <div ref='markdownBody' class="markdown-body" v-show="!prop.showMd" v-html="mdHtml" @click="clickToc">
     </div>
-    <MyTextarea class="textarea" :text="text" @update='areaUpdate' v-show="prop.showMd"></MyTextarea>
+    <MyTextarea class="textarea" :text="prop.mdText" @update='(t:string)=>$emit("update", t)' v-show="prop.showMd">
+    </MyTextarea>
     <div class="backTop" :class=' {showBack:showBackTop}' @click="backTop">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
         <path fill-rule="evenodd"
@@ -24,54 +25,48 @@
   import { ref, onMounted, computed, watch, nextTick } from "vue";
   import { useEventListener } from "@/utils/event";
   let prop = defineProps<{ mdText : string, showMd : Boolean }>();
-  let emit = defineEmits<{
-    (e : 'update', mdText : string) : void
-  }>()
+  let emit = defineEmits<{ (e : 'update', mdText : string) : void }>()
+  /**主体的ref对象*/
   let markdownBody = ref()
-  let text = ref<string>()
-  function areaUpdate(t : string) {
-    text.value = t
-    emit("update", text.value)
-  }
-
+  /**md文档的html格式*/
   let mdHtml = ref<string>('')
   let tocShow = ref<boolean>(false);
+  /**在用于css中v-bind*/
   let tocStyle = computed<'none' | 'inline'>(() => tocShow.value ? 'inline' : 'none');
-  let scroll = scrollFn();
-  // 监听滚动事件现实按钮
   let showBackTop = ref<boolean>(false);
+  let showBackTopByScrollTop = scrollFn();
   useEventListener(window, 'hashchange', closeToc)
-  useEventListener(window, 'scroll', scroll)
+  useEventListener(window, 'scroll', showBackTopByScrollTop)
   onMounted(() => {
-    watch(() => prop.showMd, () => {
-      if (!prop.showMd && prop.mdText != text.value) {
-        emit("update", text.value)
-      } else {
-        text.value = prop.mdText
-      }
-    })
     document.documentElement.style.cssText += `scroll-behavior: smooth;scroll-padding-top:50px`;
-    // 用于非初次加载,此时prop已经有值直接渲染
-    prop.mdText && init();
-    // 监听md文本变化
-    // 初次加载时因异步获取,prop值未定义,获取成功后激活watch
-    watch(prop, () => {
-      init();
-      backTop();
-    })
-    // 动态设置目录位置
+    watch(() => prop.mdText, init, { immediate: true })
+    /**动态设置目录位置 */
     watch(tocShow, () => {
       let tocEl = document.getElementsByClassName('table-of-contents')[0] as HTMLElement;
       tocEl.style.top = (document.getElementsByClassName('markdown-head')[0] as HTMLElement).offsetTop - 10 + 'px';
       document.body.style.overflow = tocShow.value ? 'hidden' : 'auto';
     })
   })
-
+  /**初始化，将prop.mdText转为html并为生成的html内容附加其他属性 */
+  async function init() {
+    // 手动加目录
+    let t = prop.mdText + '\r\n[[toc]]';
+    mdHtml.value = md.render(t)
+    // 等dom渲染结束,再允许dom操作
+    await nextTick();
+    preAddCopy();
+    updateTargetModule();
+  }
   function closeToc() : void {
     if (tocShow) tocShow.value = false;
   }
-
-  // 滚动事件
+  function clickToc(e : any) {
+    e.target.nodeName == 'A' && closeToc()
+  }
+  function backTop() {
+    window.scrollTo(0, 0);
+  }
+  /**为滚动设置防抖，距离开头一定距离就显示一个返回开头的按钮*/
   function scrollFn() {
     let setTimeCancel : NodeJS.Timeout | null;
     return function () {
@@ -83,6 +78,7 @@
       }, 200)
     }
   }
+  /**为代码块增加复制功能*/
   function preAddCopy() {
     let pres = document.querySelectorAll('pre');
     if (!pres.length) return;
@@ -119,10 +115,8 @@
       })
     }
   }
-  function clickToc(e : any) {
-    e.target.nodeName == 'A' && (tocShow.value = false)
-  }
-  // 外部连接改为新标签页代开
+
+  /**变更a标签的打开方式，非页面内跳转都改为在新开页面打开*/
   function updateTargetModule() {
     let h = location.href.toString().slice(0, 10);
     let aList = document.querySelectorAll('a');
@@ -130,32 +124,9 @@
     aList.forEach(a => {
       if (!~a.href.toString().indexOf(h)) {
         (a.target = '_blank');
-        // } else {
-        // a.addEventListener('click', (e) => {
-        // e.preventDefault()
-        // let h = a.href
-        // let s = h.indexOf('#')
-        // let id = h.slice(s + 1);
-        // let el = document.getElementById(id);
-        // if (!el) return;
-        // window.scroll(0, el.offsetTop);
-
-        // })
       }
     }
     )
-  }
-  function backTop() {
-    window.scrollTo(0, 0);
-  }
-  async function init() {
-    // 手动加目录
-    let t = prop.mdText + '\r\n[[toc]]';
-    mdHtml.value = md.render(t)
-    // 等dom渲染结束,再允许dom操作
-    await nextTick();
-    preAddCopy();
-    updateTargetModule();
   }
 </script>
 

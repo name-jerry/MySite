@@ -1,17 +1,17 @@
 <template>
   <view class="tag-box" :class="{'show-options':isShowOptions,'show-children':isShowChildren}" @tap="Toggle">
-    <navigator open-type='redirect' :url="prop.tag.href && !prop.tag.children ? prop.tag.href : 'javascript:void(0)'"
-      :target="prop.tag.href && !prop.tag.children ? '_blank' : ''" class="card tag">
+    <slot></slot>
+    <a :href="prop.tag.href && !prop.tag.children ? prop.tag.href : 'javascript:void(0)'" class="card tag">
       <view class="text-content">
         <image v-if="prop.tag.src" :src="prop.tag.src" alt="" class="img"></image>
         <text v-if="prop.tag.title" class="lines" style="--lines: 2">{{ prop.tag.title }}</text>
-        <slot></slot>
+
       </view>
       <!-- hover时提示用的 -->
       <view class="sub-content" ref="sub" v-if="prop.tag.sub">
         {{ prop.tag.sub }}
       </view>
-    </navigator>
+    </a>
     <!-- 有子类时渲染子类,js重置显示位置 -->
     <template v-if="prop.tag?.children&&prop.tag.children.length>0">
       <view class="children-wrap" ref="children" :style="childrenStyle">
@@ -30,8 +30,9 @@
 <script setup lang="ts">
   import { onMounted, onUnmounted, reactive, ref, watch } from "vue";
   import { useGetClientInfo } from "@/utils/useGetClientInfo"
-  import type { Tag, Article } from '@/type';
-  let prop = defineProps<{ tag : Tag }>();
+  import type { Tag } from '@/type';
+  let prop = defineProps<{ tag : Tag, AutoMask ?: boolean }>();
+
   let childrenStyle : any = reactive({});
   // 兼容移动端
   let isShowChildren = ref<boolean>(false)
@@ -39,10 +40,11 @@
   let isShowOptions = ref<boolean>(false)
   // tag-box位置信息
   let { clientInfo } = useGetClientInfo('.tag-box')
-  let options = ref<string[]>(["重命名", "删除"]);
+  let options = ref<string[]>(["重命名", "删除", '下载']);
   let emit = defineEmits<{
     (e : "update", tag : Tag) : void
     (e : "remove", tag : Tag) : void
+    (e : "download", tag : Tag) : void
   }>()
   async function updateName() {
     uni.showModal({
@@ -50,18 +52,22 @@
       title: "请输入名字",
       success: async (e) => {
         if (e.confirm) {
-          let a : Tag = { _id: prop.tag._id, title: e.content };
+          let a : Tag = { ...prop.tag, title: e.content };
           emit('update', a);
         }
       }
     })
   }
-  async function remove() {
+  function remove() {
     emit('remove', prop.tag);
+  }
+  function download() {
+    emit('download', prop.tag)
   }
   let fns = new Map();
   fns.set("重命名", updateName)
   fns.set("删除", remove)
+  fns.set("下载", download)
   function select(o : string) {
     blur();
     fns.has(o) && fns.get(o)()

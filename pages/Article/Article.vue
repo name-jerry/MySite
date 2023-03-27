@@ -8,11 +8,12 @@
         <view class="btns">
           <navigator class="back" open-type='redirect' url="/pages/Home/Home">首页</navigator>
           <button class="updateBtn" @tap="showMd=!showMd">{{showMd?'预览':'编辑'}}</button>
-          <button class="saveBtn " @tap="save">保存</button>
+          <button class="saveBtn " @tap="save"
+            v-show="showSave||showDownload">{{showSave?'保存':showDownload?'下载':'保存'}}</button>
           <button class="recoverBtn " @tap="recover" v-show="showSave&&!showMd">恢复</button>
 
           <picker v-if='main.artList[0]' class="pickerBtn" mode="selector" :range="main.artList" range-key="title"
-            :value='artIndex' @change="artIndex=$event.detail.value">
+            :value='currentArtIndex' @change="currentArtIndex=$event.detail.value">
             {{"文章:"+currentArt.title}}
           </picker>
           <button class="printBtn" @tap='print'>打印</button>
@@ -28,16 +29,18 @@
   import { getCurd } from "@/utils/getCurd";
   import { Article } from "@/type";
   import useMainStore from "@/stores/useMainStore";
+  import { downloadArt } from "@/tools/dowloadArt"
   let main = useMainStore();
   // 当前文章下标数据的key
   const currenteIndexKey = 'articleIndex';
   let curdArt = getCurd<Article>('articles');
   let mdText = ref<string>('');
   let query : { title : string };
-  let artIndex = ref<number>(0);
-  let currentArt = computed<Article>(() => main.artList[artIndex.value]);
+  let currentArtIndex = ref<number>(0);
+  let currentArt = computed<Article>(() => main.artList[currentArtIndex.value]);
   let showMd = ref<Boolean>(false);
   let showSave = ref<Boolean>(false);
+  let showDownload = computed<boolean>(() => main.artList[currentArtIndex.value].updateCount);
   function update(text : string) {
     mdText.value = text;
     showSave.value = true;
@@ -48,8 +51,8 @@
   });
   onMounted(() => {
     initArtIndex()
-    watch(artIndex, () => {
-      uni.setStorageSync(currenteIndexKey, '' + artIndex.value);
+    watch(currentArtIndex, () => {
+      uni.setStorageSync(currenteIndexKey, '' + currentArtIndex.value);
       updateMdTextByIndex();
     }, { immediate: true })
   })
@@ -58,27 +61,21 @@
     a.content = mdText.value;
     if (main.isOnLine) {
       curdArt("update", a)
+      showSave.value = false
     } else {
-      // 获取文件内容，例如从服务器获取
-      // 这里假设你已经在一个字符串变量中获得了文件内容
-      var fileContent = a.content;
-      // 将字符串转换成 Blob 对象
-      var blob = new Blob([fileContent], { type: "text/plain" });
-      // 创建 URL 字符串
-      var url = URL.createObjectURL(blob);
-      // 创建 a 标签，设置 href 和 download 属性
-      var link = document.createElement("a");
-      link.href = url;
-      link.download = a.title;
-      // 将 a 标签添加到文档中并触发下载
-      document.body.appendChild(link);
-      link.click();
-      // 清理临时 URL 对象
-      URL.revokeObjectURL(url);
-      link.remove()
+      if (showSave.value) {
+        main.artList[currentArtIndex.value].content = a.content
+        showSave.value = false
+        main.artList[currentArtIndex.value].updateCount = true
+        return
+      }
+
+      downloadArt(a)
     }
-    showSave.value = false
+    main.artList[currentArtIndex.value].updateCount = false
+
   }
+
   function recover() {
     uni.showModal({
       title: '提示',
@@ -101,16 +98,16 @@
     // 本地无存储时
     if (!~i) i = 0;
     // 触发watch
-    artIndex.value = i
+    currentArtIndex.value = i
   }
 
   async function updateMdTextByIndex() {
-    let { title, content } = main.artList[artIndex.value]
+    let { title, content } = main.artList[currentArtIndex.value]
     let a = history.state.current.toString().replace(/=.+$/, '=' + title)
     history.replaceState(history.state, null, a);
     mdText.value = content
   }
-  async function print() {
+  function print() {
     window.print();
   }
 </script>

@@ -104,7 +104,7 @@
   .body {
     height: 100vh;
     display: grid;
-    grid-template-rows: 1fr auto auto 1fr;
+    grid-template-rows: auto 20px auto 1fr;
     gap: 10px;
     place-items: center;
     font-size: 16px;
@@ -176,7 +176,7 @@
   }
 
   .tags-wrap {
-    grid-row: 2;
+    grid-row: 3;
     z-index: 3;
   }
 

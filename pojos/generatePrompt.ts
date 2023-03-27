@@ -1,10 +1,6 @@
 import { getPromptMap } from "./promptData"
 import type { Prompt } from "./promptData"
-/**
- * 根据前面输入的字符匹配联想代码数组
- * @param {string} beforeString - 光标前面的字符串
- * @return {string} 根据字符串返回联想到的代码片段数组
- */
+
 let fns = new Map()
 fns.set('table', (e : RegExpExecArray) => {
   let rows : number = +e[1];
@@ -19,7 +15,11 @@ fns.set('table', (e : RegExpExecArray) => {
   res += '\n'
   return res
 })
-
+/**
+ * 根据前面输入的字符匹配联想代码数组
+ * @param {string} beforeString - 光标前面的字符串
+ * @return {string} 根据字符串返回联想到的代码片段数组
+ */
 function generatePrompt(beforeString : string) : Prompt[] {
   // 获取新光标前的5个字母
   let str = beforeString.slice(-10);

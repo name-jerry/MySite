@@ -12,7 +12,8 @@ interface Article {
   user_id ?: string;
   sub ?: string;
   title : string;
-  content ?: string
+  content ?: string;
+  updateCount ?: boolean;
 }
 interface Tag {
   _id ?: string;
@@ -23,6 +24,7 @@ interface Tag {
   title : string;
   sub ?: string | null;
   children ?: Tag[];
+  updateCount ?: boolean;
 }
 type Option = {
   key ?: string,
