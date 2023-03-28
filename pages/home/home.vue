@@ -22,6 +22,12 @@
   })
   // 设置
   let setOptions = reactive<Option[]>([])
+  function swith() {
+    uni.showModal({
+      title: '提示',
+      content: '读写资源有限,暂不开放读写功能'
+    })
+  }
   function initSet() {
     for (let [k, v] of Object.entries(show)) {
       if (k == 'set') continue;
@@ -35,6 +41,7 @@
     let k = option.key
     if (!k) {
       main.isLogin = false;
+      uni.clearStorageSync()
     } else {
       show[k].value = true;
     }
@@ -87,7 +94,6 @@
       </ReadFilePicker>
     </view>
     <TagsWrap class="tags-wrap"></TagsWrap>
-
     <!-- 固定信息部分 -->
     <SearchWrap class=' container search-wrap'>
     </SearchWrap>
@@ -95,6 +101,10 @@
     <text url="../login/login.vue" class="set hover-color icon" @tap='show.set.value=!show.set.value'>&#xe600;</text>
     <Options v-if="show.set.value" :options='setOptions' :showMask='true' class="set-options"
       @cancel='show.set.value=!show.set.value' @select='setSelect' />
+    <view class="switch-wrap ">{{main.isOnLine?'在线':'离线'}}
+      <switch class="swith-online" color="hsl(146, 36%, 61%)" :checked="main.isOnLine" disabled @tap="swith">
+      </switch>
+    </view>
     <MyFooter class="footer container"></MyFooter>
   </view>
 </template>
@@ -192,7 +202,8 @@
   .logo,
   .set,
   .set-options,
-  .search-wrap {
+  .search-wrap,
+  .switch-wrap {
     top: 20px;
     transition: var(--transition-1);
     position: absolute;
@@ -234,6 +245,20 @@
     background-color: white;
     z-index: 9;
 
+  }
+
+  .switch-wrap {
+    right: 100px;
+    display: flex;
+    align-items: center;
+
+    .swith-online {
+      transform: scale(.5) translateX(-20px);
+
+      &:deep(.uni-switch-input::before) {
+        background-color: red;
+      }
+    }
   }
 
   @media (width<=575px) {

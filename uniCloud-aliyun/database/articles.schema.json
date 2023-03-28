@@ -48,6 +48,16 @@
         { "value": 1, "text": "已发布" }
       ]
     },
+    "updateCount": {
+      "bsonType": "bool",
+      "title": "是否修改",
+      "description": "文章是否修改且未保持",
+      "defaultValue": false,
+      "enum": [
+        { "value": true, "text": "未保持" },
+        { "value": false, "text": "未修改" }
+      ]
+    },
     "read_count": {
       "bsonType": "int",
       "title": "阅读数量",

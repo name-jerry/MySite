@@ -1,7 +1,7 @@
 <template>
   <view class="tag-box" :class="{'show-options':isShowOptions,'show-children':isShowChildren}" @tap="Toggle">
     <slot></slot>
-    <a :href="prop.tag.href && !prop.tag.children ? prop.tag.href : 'javascript:void(0)'" class="card tag">
+    <a href="javascript:void(0)" @click='to' class="card tag">
       <view class="text-content">
         <image v-if="prop.tag.src" :src="prop.tag.src" alt="" class="img"></image>
         <text v-if="prop.tag.title" class="lines" style="--lines: 2">{{ prop.tag.title }}</text>
@@ -46,6 +46,11 @@
     (e : "remove", tag : Tag) : void
     (e : "download", tag : Tag) : void
   }>()
+  function to() {
+    uni.navigateTo({
+      url: prop.tag.href
+    })
+  }
   async function updateName() {
     uni.showModal({
       editable: true,

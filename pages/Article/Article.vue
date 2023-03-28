@@ -1,13 +1,14 @@
 <template>
   <view class="container">
-    <ShowMD :mdText='mdText' :showMd="showMd" @update='update'>
+    <ShowMD :mdText='mdText' :showMd="showMd" @update='update'
+      :class="{'show-save':showSave,'show-download':showDownload}">
       <template #default>
         <SearchWrap class='search-wrap' :auto-shrink='true'></SearchWrap>
       </template>
       <template #header>
         <view class="btns">
           <navigator class="back" open-type='redirect' url="/pages/Home/Home">首页</navigator>
-          <button class="updateBtn" @tap="showMd=!showMd">{{showMd?'预览':'编辑'}}</button>
+          <button class="updateBtn" @tap="switchView">{{showMd?'预览':'编辑'}}</button>
           <button class="saveBtn " @tap="save"
             v-show="showSave||showDownload">{{showSave?'保存':showDownload?'下载':'保存'}}</button>
           <button class="recoverBtn " @tap="recover" v-show="showSave&&!showMd">恢复</button>
@@ -30,6 +31,7 @@
   import { Article } from "@/type";
   import useMainStore from "@/stores/useMainStore";
   import { downloadArt } from "@/tools/dowloadArt"
+  import { useEventListener } from "@/utils/event"
   let main = useMainStore();
   // 当前文章下标数据的key
   const currenteIndexKey = 'articleIndex';
@@ -38,14 +40,29 @@
   let query : { title : string };
   let currentArtIndex = ref<number>(0);
   let currentArt = computed<Article>(() => main.artList[currentArtIndex.value]);
+  /**切换视图*/
   let showMd = ref<Boolean>(false);
   let showSave = ref<Boolean>(false);
   let showDownload = computed<boolean>(() => main.artList[currentArtIndex.value].updateCount);
+  let keydownFns = new Map()
+  keydownFns.set('KeyA', switchView)
+  keydownFns.set('KeyS', () => showSave.value && save())
+  keydownFns.set('KeyD', () => {
+    if (showSave.value) {
+      save(); save();
+    } else { save(); }
+  })
+  function keydown(e : KeyboardEvent) {
+    let k = e.code;
+    if (!e.ctrlKey || !keydownFns.has(k)) return;
+    e.preventDefault();
+    keydownFns.get(k)();
+  }
+  useEventListener(window, 'keydown', keydown)
   function update(text : string) {
     mdText.value = text;
     showSave.value = true;
   };
-
   onLoad((q) => {
     query = q as { title : string }
   });
@@ -56,6 +73,9 @@
       updateMdTextByIndex();
     }, { immediate: true })
   })
+  function switchView() {
+    showMd.value = !showMd.value
+  }
   async function save() {
     let a = currentArt.value
     a.content = mdText.value;
@@ -115,6 +135,18 @@
 <style lang="scss" scoped>
   .container {
     display: flex;
+
+
+  }
+
+
+
+  .show-download {
+    box-shadow: 0px 0px 10px yellow;
+  }
+
+  .show-save {
+    box-shadow: 0px 0px 10px red;
   }
 
   .btns {

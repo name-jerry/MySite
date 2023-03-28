@@ -29,15 +29,19 @@
   const isComposing = ref<boolean>(false);
   const debounceInput = debounce(input, 200)
   useEventListener(window, 'click', hiddenPrompt)
-  useEventListener(window, 'keydown', clickTab)
+  useEventListener(window, 'keydown', keydown)
   onMounted(() => {
     watch(() => prop.text, autoHeight, { immediate: true })
   })
+  let keydownFns = new Map()
+  keydownFns.set('Tab', enterPromt)
+  keydownFns.set('Escape', hiddenPrompt)
   /**监听键盘事件，点击tab时输入联想的代码*/
-  function clickTab(e) {
-    if (e.key != "Tab") return
+  function keydown(e) {
+    const c = e.code
+    if (!keydownFns.has(c)) return;
     e.preventDefault();
-    enterPromt()
+    keydownFns.get(c)()
   }
   /**利用div自动增高的特点，为其赋值，areatext通过css设置成同div高度*/
   function autoHeight() {
@@ -177,7 +181,7 @@
 
     .prompt {
       position: absolute;
-      top: 40px;
+      top: 100px;
       left: 40px;
       list-style-type: decimal;
       padding-left: 0;
@@ -204,7 +208,8 @@
           position: absolute;
           left: calc(100% + 2px);
           top: 0;
-          width: 100%;
+          white-space: pre;
+          min-width: 100%;
           min-height: 100%;
         }
       }

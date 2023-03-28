@@ -1,167 +1,78 @@
+
 # MySite
 
-一个简单的首页,用于存储书签以及个人笔记,异地登录,临时办公,能通过该网站快速部署常用工具 [详见](https://zhangruisite.com).
-   
-灵感来edge首页![edge默认页](README_files/1.png)
+- 一个简单的首页,有个人计划,在线编写markdown文档,点击首页右上角设置,选择上传模块,将md文档拖入其中上传,即可实现本地的编辑,具体编写功能见下 [详见](https://zhangruisite.com).
+- md解析基于markdown-it引擎实现,大部分功能和官方一致,以下是个人对常用功能的总结,以及部分和官方不一致的地方,[官方详见](https://markdown.com.cn/cheat-sheet.html#%E6%89%A9%E5%B1%95%E8%AF%AD%E6%B3%95).
+
+## 基础功能
+
+| 基础简写	|说明																					
+|:---:|:---																						
+|标题(# title)	|注意有空格,符号个数表示标题级别等同`<h1></h1>`	
+|段落|空白行后跟文字,不要用空白行和制表符缩进,等同`<p></p>`
+|换行|在一行的末尾添加两个或多个空格，然后按回车键,即可创建一个
+|强调(*)	|加粗`**string**`,斜体`*string*`,加粗斜体`***string***`
+|引用(>空格string)|多行引用时注意段落和段落之间的空白行也要加>,嵌套引用>>	
+|有序列表(number.空格string)[^list]|两个tab或四个空格缩进可表示嵌套,等同`<ol><li></li></ol>`
+|无序列表(-或*或+空格string))[^list]| 两个tab或四个空格缩进可表示嵌套,等同`<ul><li></li></ul>`
+|代码(\`)	|如果code中有`则外部使用\``code\``
+|代码块|四个空格或则一个制表符,在列表中时需要8个空格或2个制表符	
+|分割线|空白行***或---或___空白行
+|链接\[]()	|\[超链接显示名](超链接地址 "超链接title"),title可选对应的HTML代码：`<a href="超链接地址" title="超链接title">超链接显示名</a>`
+|引用链接	|\[超链接显示名][标签],在文章底部[标签]: url "title"(url中的空格使用(%20表示),将链接分成两部分	
+|链接简写<>	|<email或url>
+|图片!\[]()|!\[图片alt](图片链接 "图片title")等同`<img src="图片链接" alt="图片alt" title="图片title">`
+|图片加链接(图片外嵌套链接)	|\[!\[沙漠中的岩石图片](/assets/img/shiprock.jpg "Shiprock")](https://markdown.com.cn)
+|转义字符\	|用于显示保留字符,字符< 和 &将被自动转义
+|内嵌html标签|内联标签能解析元素中markdown语法,区块标签前后加空白行,不要缩进,内部不能解析其中markdown语法
+|常用html标签|details可折叠，summary标题,搭配代码块使用可以缩减文章篇幅  
+
+[^list]:markdown原文档嵌套只用一个tab或两个空格,这里用的markdown-it引擎必须要两个tab或四个空格
+
+## 扩展
+
+扩展简写 | 说明		
+|:---:	|:---
+表格|快捷输入[^table]table3*3使用三个或多个连字符（---）创建每列的标题，并使用管道（竖）分隔每列。连字符的左侧，右侧或两侧添加冒号（:），将列中的文本对齐到左侧，右侧或中心
+代码块|前后行使用```	或~~~替代原来的需要的4个空格,同时可在前行连字符后面加上标记语言类型用于采用相应的高亮显示
+|引用脚注|[\^标签],被引用处[\^标签]: 解释,被引用会自动排版到文档最下面			
+|内联脚注|\^[解释],表现结果和引用脚注一样										
+|	删除线	|\~\~string\~\~																					
+|复选框	|-空格[空格],选中的复选框-空格[x]													
+|	Emoji表情	|使用emoji shortcodes	
+|\*\[缩写]: 全称|对一个缩写定义全称,使用该缩写时 空格缩写空格			  				
+|马克笔(\=\=)	| \=\=string\=\=加载效果等同`<mark>string</mark>`	
+|上下标				|\^上标\^ \~下标\~
+|换页符|空行加一行`---`再加一行`---`,在打印时表现为强制换页,平时表示为上下内容距离加宽,部分浏览器还会显示出一个分割线
+
+## 已启用快捷方式
+
+|   功能 | 快捷键   |  
+|:--:|:--:|  
+|  切换编辑预览 | C+a   |     
+|  保存  | C+s   |   
+|  下载 | C+d   |
+
+*[C]: ctrl
+
+## 已启用代码联想功能s
+
+提示出现后按tab键输入
+
+|   代码 | 触发简写   |  
+|:--:|:--:|  
+| img  |  图片  |     
+|  a  |  标签  |   
+| code  |  代码块  |
+| table数字*数字  | 列表   |
 
 
-## 一.功能特色
 
-1. 模块区设计,可拓展组件(目前支持备忘录).
-2. 搜索工具(目前支持百度,bing).
-3. 书签栏,使用递归组件可以无限嵌套.
-4. 使用markdown-it实现的markdown文章显示页
+## 未启用
 
-## 二.布局逻辑及实现
-
-1. 总体布局
-采用grid设计,分四行,头尾使用`1fr`平分剩余空间,其余由内容决定,同时设置总体高度100%避免被1fr撑开,详见[^fr]. 
-[^fr]: **注意:**多处设置fr时的表现,假设两个网格行高为1fr 1fr,若父级未指定高度,则两处行高始终相等**即低的网格高度始终被更高的网格拉伸**,此时便会撑开父类,若父级设置高度且高度不足两者平分时,高度大的网格行高不变,剩余空间全部分配给行高小的网站,直至二者高度相等.
-```scss
-  .body {
-    height: 100%;
-    display: grid;
-    grid-template-rows: 1fr auto auto 1fr;
-    gap: 10px;
-    place-items: center;
-    font-size: 16px;
-  }
-```
-2. 响应式设计
-每个`grid-item`都配置统一类名`.container`,通过媒体查询器动态修改`max-width`及`padding`实现各区域统一宽度表现.**此处也可通过父类设置`padding`及`flex`实现类似效果**
-```scss
-  .container {
-    /* 设置100%未达到最大宽度时显示沾满 */
-    max-width: 80%;
-    box-sizing: border-box;
-    width: 100%;
-    /* 设置块元素的左右居中 */
-    margin: 0 auto;
-    /* 设置当宽度压缩的时候保证内容和边界仍有空间 */
-    padding-right: 16px;
-    padding-left: 16px;
-  }
-```
-3. 组件设计
-每个`grid-item`都是一个组件,通过`grid-row`属性指定自身位置,其中footer部分使用尾端对齐
-```scss
-  .footer {
-    grid-row: -2;
-    place-self: end start;
-  }
-```
-4. 小组件
-小组件统一置于文档底部,通过`absolute`自由调整位置,在相应`grid-item`内通过`padding`空出空间
-
-## 三.模块设计
-
-- 得益于vue强大的[SFC](https://cn.vuejs.org/guide/scaling-up/sfc.html "单文件组件")系统,网站中各部分`grid-item`及小组件都是一个SFC,源码文档结构简单,可读性强,多端适配简单,大屏时可将多个组件置于同一页面,小程序端时也可看需求将组件分为多个page展示
-
-- 首页第一个区域也做模块区域设计,可通过选取不同组件实现个性化定制,其核心是通过`grid`布局`auto-fill`实现动态调整
-```scss
-.module {
-    height: 100%;
-    grid-row: 1;
-    align-self: end;
-    /* 为小组件空出位置 */
-    padding-top: 60px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 30px;
-    .memo {
-      height: 300px;
-      max-height: 300px;
-    }
-    .login {
-      height: 300px;
-    }
-  }
-```
-![窄屏](README_files/2.png "窄屏")![宽屏](README_files/3.png "宽屏")
-
-## 三.问题和思考
-
-1. H5中通过`:hover,:active`等伪类选择器,可以轻松的实现组件聚焦及失焦时的样式切换,而小程序端该怎么判断呢?
- - 例如:小程序中点击设置出现选项,点击其他取消选项
- - 思路:组件内部设置一层覆盖全局透明遮罩,当聚焦时显示这个遮罩,当遮罩被点击时抛出事件,通知组件失焦,再通过增减组件根元素上的类名来实现不同状态下的组件表现
-```scss
-<template>
-  <view class="mask"></view>
-</template>
-<script setup lang="ts">
-</script>
-<style scoped lang="scss">
-  .mask {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    background-color: transparent;
-  }
-</style>
-```
-
-2. uniapp中动态增加的组件如果判断其所处位置?
- - 举例:书签为递归组件,其子类容器在点击会动态显示在页面,怎么判断书签左右上下空间是否足够其显示?
- - 思路:通过查询设备高宽和组件信息,得出组件的的位置信息,再通过对比设置子容器的`absolute`定位.
- 
- ```javascript
- import { ComponentInternalInstance } from "vue"
- interface ClientInfo {
-   clientLeft: number;
-   clientRight: number;
-   clientTop: number;
-   clientBottom: number;
-   clientWidth: number;
-   clientHeight: number;
-   windowWidth: number;
-   windowHeight: number;
- }
- /** 
- @param{string}selector 一个css选择器
- @param{ComponentInternalInstance}self 当前组件实例对象
- @returns Promise 返回组件相对视口位置,自身及设备高宽,
- */
- function getClientInfo(selector: string, self: ComponentInternalInstance): Promise<ClientInfo> {
-   return new Promise(res => {
-     uni.createSelectorQuery().in(self).select(selector)
-       .boundingClientRect(
-       ).exec((data) => {
-         data = data[0];
-         let { windowWidth: wW, windowHeight: wH } = uni.getSystemInfoSync() as UniNamespace.GetSystemInfoResult
-         let { height: h, width: w, left: l, top: t } = (data as UniNamespace.NodeInfo)
-         let r = wW - l - w
-         let b = wH - t - h
-         let info: ClientInfo = { clientLeft: l, clientRight: r, clientTop: t, clientBottom: b, clientWidth: w, clientHeight: h, windowWidth: wW, windowHeight: wH }
-         res(info)
-       })
-   })
- 
- }
- export { getClientInfo, ClientInfo }
-```
-3. vue3+web端中首次加载得页面第一次使用锚点定位进行页面内跳转时会出现刷新页面怎么处理?
-- 阻止a得默认点击事件根据href中得id滑动到对应标签
-```js
-// 外部连接改为新标签页代开,业内跳转改为
-  function updateTargetModule() {
-    let h = location.href.toString().slice(0, 10);
-    let aList = document.querySelectorAll('a');
-    if (!aList.length) return;
-    aList.forEach(a => {
-      if (!~a.href.toString().indexOf(h)) {
-        (a.target = '_blank');
-      } else {
-        a.addEventListener('click', (e) => {
-          e.preventDefault()
-          let h = a.href
-          let s = h.indexOf('#')
-          let id = h.slice(s + 1);
-          document.getElementById(id).scrollIntoView(true);
-        })
-      }
-    }
-    )
-  }
-```
+|未启用拓展| 说明		
+:---:	|:---
+|目录(\[\[toc]])|原来是可在任何地方生成目录,目前已设置成自动生成,如果继续填写会重复生成表格堆叠在左上角,遇到现实不正常的,在md文件最后结尾加两个空行就行
+|{.或#或attr=string}	|加属性,使用者基本用不到,就没启用了  
+|描述列表	|title换行:空格 描述														
+|自动转url链接|为了避免不必要的转换就没启用了,如果有自动转换的,可以在url前后加``将其解读为代码片段		
