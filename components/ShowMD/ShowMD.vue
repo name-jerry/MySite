@@ -1,13 +1,17 @@
 <template>
-  <div class="markdown-box">
+  <div class="markdown-box" :class="{coexist:isCoexist}">
     <slot> </slot>
     <div class="markdown-head">
-      <text class="icon" @tap="tocShow=prop.showMd?tocShow:!tocShow">&#xe677;</text>
+      <i class="icon" @tap="tocShow=prop.showMd?tocShow:!tocShow">&#xe677;</i>
+      <MySwitch class="switch" :checked='isCoexist' @change='switchCoexist' checked-text='双' unchecked-text='单'
+        back-text='屏'>
+      </MySwitch>
       <slot name="header"></slot>
     </div>
-    <div ref='markdownBody' class="markdown-body" v-show="!prop.showMd" v-html="mdHtml" @click="clickToc">
+    <div ref='markdownBody' class="markdown-body" v-show="!prop.showMd||isCoexist" v-html="mdHtml" @click="clickToc">
     </div>
-    <MyTextarea class="textarea" :text="prop.mdText" @update='(t:string)=>$emit("update", t)' v-show="prop.showMd">
+    <MyTextarea class="textarea" :text="prop.mdText" @update='(t:string)=>$emit("update", t)'
+      v-show="prop.showMd||isCoexist">
     </MyTextarea>
     <div class="backTop" :class=' {showBack:showBackTop}' @click="backTop">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -24,8 +28,13 @@
   import md from './markdownIt.js'
   import { ref, onMounted, computed, watch, nextTick } from "vue";
   import { useEventListener } from "@/utils/event";
+
   let prop = defineProps<{ mdText : string, showMd : Boolean }>();
-  let emit = defineEmits<{ (e : 'update', mdText : string) : void }>()
+  let emit = defineEmits<{
+    (e : 'update', mdText : string) : void,
+    (e : 'updateCoexist', isCoexist : boolean) : void
+  }>()
+  let isCoexist = ref<boolean>(false)
   /**主体的ref对象*/
   let markdownBody = ref()
   /**md文档的html格式*/
@@ -47,6 +56,11 @@
       document.body.style.overflow = tocShow.value ? 'hidden' : 'auto';
     })
   })
+  /**切换按钮时更改变量isCoexist同时抛出事件updateCoexist*/
+  function switchCoexist() {
+    isCoexist.value = !isCoexist.value;
+    emit('updateCoexist', isCoexist.value)
+  }
   /**初始化，将prop.mdText转为html并为生成的html内容附加其他属性 */
   async function init() {
     // 手动加目录
@@ -255,6 +269,11 @@
       &:hover {
         background-color: $color-bg-default;
       }
+    }
+
+    .switch {
+      color: $color-font-default;
+      text-shadow: 1px 1px 1px gray;
     }
   }
 
@@ -745,6 +764,28 @@
       }
 
       // ===========结尾=========
+    }
+  }
+
+  .markdown-box.coexist {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto 1fr;
+
+    .markdown-head {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+
+    .markdown-body {
+      grid-row: 2;
+      grid-column: 1;
+    }
+
+    .textarea {
+      grid-row: 2;
+      grid-column: 2;
+      box-shadow: -1px 0px 1px $color-bg-hr;
     }
   }
 

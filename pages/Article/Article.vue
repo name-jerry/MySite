@@ -1,14 +1,14 @@
 <template>
   <view class="container">
     <ShowMD :mdText='mdText' :showMd="showMd" @update='update'
-      :class="{'show-save':showSave,'show-download':showDownload}">
+      :class="{'show-save':showSave,'show-download':showDownload}" @updateCoexist='b=>isCoexist=b'>
       <template #default>
         <SearchWrap class='search-wrap' :auto-shrink='true'></SearchWrap>
       </template>
       <template #header>
         <view class="btns">
           <navigator class="back" open-type='redirect' url="/pages/Home/Home">首页</navigator>
-          <button class="updateBtn" @tap="switchView">{{showMd?'预览':'编辑'}}</button>
+          <button class="updateBtn" v-show="!isCoexist" @tap="switchView">{{showMd?'预览':'编辑'}}</button>
           <button class="saveBtn " @tap="save"
             v-show="showSave||showDownload">{{showSave?'保存':showDownload?'下载':'保存'}}</button>
           <button class="recoverBtn " @tap="recover" v-show="showSave&&!showMd">恢复</button>
@@ -32,19 +32,20 @@
   import useMainStore from "@/stores/useMainStore";
   import { downloadArt } from "@/tools/dowloadArt"
   import { useEventListener } from "@/utils/event"
-  let main = useMainStore();
+  const main = useMainStore();
   // 当前文章下标数据的key
   const currenteIndexKey = 'articleIndex';
-  let curdArt = getCurd<Article>('articles');
-  let mdText = ref<string>('');
+  const curdArt = getCurd<Article>('articles');
+  const mdText = ref<string>('');
   let query : { title : string };
-  let currentArtIndex = ref<number>(0);
-  let currentArt = computed<Article>(() => main.artList[currentArtIndex.value]);
+  const currentArtIndex = ref<number>(0);
+  const currentArt = computed<Article>(() => main.artList[currentArtIndex.value]);
   /**切换视图*/
-  let showMd = ref<Boolean>(false);
-  let showSave = ref<Boolean>(false);
-  let showDownload = computed<boolean>(() => main.artList[currentArtIndex.value].updateCount);
-  let keydownFns = new Map()
+  const showMd = ref<Boolean>(false);
+  const isCoexist = ref<boolean>(false);
+  const showSave = ref<Boolean>(false);
+  const showDownload = computed<boolean>(() => main.artList[currentArtIndex.value].updateCount);
+  const keydownFns = new Map()
   keydownFns.set('KeyA', switchView)
   keydownFns.set('KeyS', () => showSave.value && save())
   keydownFns.set('KeyD', () => {
@@ -74,6 +75,7 @@
     }, { immediate: true })
   })
   function switchView() {
+    if (isCoexist.value) return;
     showMd.value = !showMd.value
   }
   async function save() {
@@ -135,18 +137,15 @@
 <style lang="scss" scoped>
   .container {
     display: flex;
-
-
+    max-width: 100%;
   }
 
-
-
   .show-download {
-    box-shadow: 0px 0px 10px yellow;
+    box-shadow: 0px 0px 40px #69aa99, 0px 0px 60px #4F8073;
   }
 
   .show-save {
-    box-shadow: 0px 0px 10px red;
+    box-shadow: 0px 0px 40px hsl(345, 88%, 80%), 0px 0px 60px hsl(345, 88%, 80%);
   }
 
   .btns {
@@ -198,6 +197,8 @@
   .recoverBtn {
     margin-right: auto;
   }
+
+
 
   @media print {
     .container>*:not(.markdown-box) {
