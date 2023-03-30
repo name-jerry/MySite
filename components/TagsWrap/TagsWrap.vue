@@ -7,7 +7,9 @@
         <view class="count " v-show="item.updateCount">{{'未下载'}}</view>
       </Tag>
     </template>
-    <view v-show="showBtn" class="add tag-box hover-shadow-btn" :class="{'is-more':isMore}" @tap.native.stop='showMore'>
+    <view class="tag-box  button-group" :class="{'is-more':isMore}">
+      <view class="icon new-file hover-shadow-btn " @tap.native.stop='newFile'>&#xe647;</view>
+      <view class="add hover-shadow-btn " v-show="showBtn" @tap.native.stop='showMore'></view>
     </view>
   </view>
 </template>
@@ -30,6 +32,7 @@
   })
   let showTagsCount = ref < number > (0)
   let isMore = ref < boolean > (false)
+  /**控制是否显示 更多按钮*/
   let showBtn = computed(() => tagList.value.length > (2 * column.value - 1))
   let column = ref < number > (0);
   let draggingIndex = ref < number > (-1)
@@ -118,6 +121,21 @@
     showTagsCount.value = 2 * column.value - 1
   }
 
+  async function newFile() {
+    let a: Article = {
+      _id: 'offLine',
+      sub: 'newFile.md' + main.artList.length,
+      title: 'newFile.md',
+      content: ''
+    }
+    // 在线是同步到网络
+    if (main.isOnLine) {
+      let res = await curdArt("add", a)
+      a._id = res.id;
+    }
+    main.artList.push(a);
+  }
+
   function showMore() {
     showTagsCount.value = isMore.value ? 2 * column.value - 1 : Number.MAX_VALUE;
     isMore.value = !isMore.value
@@ -184,6 +202,7 @@
     .tag-box {
       background-color: white;
       cursor: pointer;
+      border-radius: inherit;
 
       .count {
         position: absolute;
@@ -199,35 +218,69 @@
       }
     }
 
-    .add {
-      border-radius: inherit;
-      position: relative;
+    .button-group {
+      overflow: hidden;
+      display: flex;
+      padding: 8px;
+      gap: 8px;
+      border: 4px solid white;
+      box-shadow: -4px -4px 8px var(--color-white-1),
+        6px 6px 12px var(--color-shadow-1),
+        inset 4px 4px 8px var(--color-shadow-2),
+        inset -6px -6px 12px var(--color-white-1);
 
-      &::before,
-      &::after {
-        content: '';
-        width: 2px;
-        height: 18px;
-        background-color: black;
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        transition: .25s ease;
+
+      &>* {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: inherit;
+        background-color: inherit;
+        border: 1px solid white;
+        border-right-color: var(--color-shadow-1);
+        border-bottom: var(--color-shadow-1);
       }
 
-      &::after {
-        transform: translate(-50%, -50%) rotate(90deg);
+      .new-file {
+        font-size: 28px;
+
+        &:hover {
+          color: var(--color-border-default);
+          text-shadow: 0px 0px 1px var(--color-border-default), 0px 0px 50px var(--color-border-default);
+        }
       }
 
-      &.is-more {
-        &::before {
-          transform: translate(-50%, -50%) rotate(45deg);
+      .add {
+        position: relative;
+
+        &::before,
+        &::after {
+          content: '';
+          width: 2px;
+          height: 18px;
+          background-color: black;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          transition: .25s ease;
         }
 
         &::after {
-          transform: translate(-50%, -50%) rotate(135deg);
+          transform: translate(-50%, -50%) rotate(90deg);
         }
+      }
+    }
+
+    .button-group.is-more>.add {
+      &::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+
+      &::after {
+        transform: translate(-50%, -50%) rotate(135deg);
       }
     }
   }

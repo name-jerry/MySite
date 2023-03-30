@@ -15,7 +15,9 @@ export function downloadArt(article : Article) {
   // 创建 a 标签，设置 href 和 download 属性
   const link = document.createElement("a");
   link.href = url;
-  link.download = article.title;
+  let name = article.title
+  if (!/.*\.md$/.test(name)) name += '.md';
+  link.download = name;
   // 将 a 标签添加到文档中并触发下载
   document.body.appendChild(link);
   link.click();
