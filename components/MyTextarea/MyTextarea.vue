@@ -58,22 +58,22 @@
     keydownFns.get(c)(e, area)
   }
   function doubleKey(e : KeyboardEvent, area : HTMLTextAreaElement, keys : string[]) {
-    if (!keys[1]) return
     let start = area.selectionStart;
     let end = area.selectionEnd;
     let text = area.value
     let str1 = text.slice(0, start)
     let str2 = text.slice(start, end)
     let str3 = text.slice(end)
-    area.value = str1 + keys[0] + str2 + keys[1] + str3
-    area.selectionEnd = end + 2
-    // 删除默认键入得字符
-    setTimeout(() => {
-      let c = [...area.value]
-      c[end + 2] = ''
-      area.value = c.join('')
-      area.selectionEnd = end + 2
-    }, 0)
+    let position;
+    if (keys[1]) {
+      area.value = str1 + keys[0] + str2 + keys[1] + str3
+      position = end + 2;
+    } else {
+      area.value = str1 + keys[0] + str3
+      position = start + 1
+    }
+    area.selectionEnd = position
+
   }
   /**利用div自动增高的特点，为其赋值，areatext通过css设置成同div高度*/
   function autoHeight() {
