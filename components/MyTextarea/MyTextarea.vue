@@ -33,15 +33,39 @@
   onMounted(() => {
     watch(() => prop.text, autoHeight, { immediate: true })
   })
-  let keydownFns = new Map()
+  let keydownFns = new Map<string, (e : KeyboardEvent, area : HTMLTextAreaElement) => void>()
   keydownFns.set('Tab', enterPromt)
   keydownFns.set('Escape', hiddenPrompt)
+  keydownFns.set('BracketLeft', (e, area) => {
+    let keys = e.shiftKey ? ["{", "}"] : ["[", "]"];
+    doubleKey(e, area, keys)
+  })
+  keydownFns.set('Digit9', (e, area) => {
+    let keys = e.shiftKey ? ["(", ")"] : ['9', '']
+    doubleKey(e, area, keys)
+  })
+  keydownFns.set('Quote', (e, area) => {
+    let keys = e.shiftKey ? ['"', '"'] : ["'", "'"];
+    doubleKey(e, area, keys)
+  })
   /**监听键盘事件，点击tab时输入联想的代码*/
   function keydown(e) {
+    const area = textarea.value
     const c = e.code
     if (!keydownFns.has(c)) return;
     e.preventDefault();
-    keydownFns.get(c)()
+    keydownFns.get(c)(e, area)
+  }
+  function doubleKey(e : KeyboardEvent, area : HTMLTextAreaElement, keys : string[]) {
+    let start = area.selectionStart;
+    let end = area.selectionEnd;
+    let text = area.value
+    let str1 = text.slice(0, start)
+    let str2 = text.slice(start, end)
+    let str3 = text.slice(end)
+    area.value = str1 + keys[0] + str2 + keys[1] + str3
+    let add = keys[1] ? 2 : 1
+    area.selectionEnd = end + add
   }
   /**利用div自动增高的特点，为其赋值，areatext通过css设置成同div高度*/
   function autoHeight() {
