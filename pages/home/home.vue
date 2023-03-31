@@ -42,6 +42,12 @@
     if (!k) {
       main.isLogin = false;
       uni.clearStorageSync()
+    } else if (!main.isLogin && k != 'login') {
+      uni.showToast({
+        title: '请先登录',
+        icon: 'error'
+      });
+      show.login.value = true
     } else {
       show[k].value = true;
     }
@@ -78,7 +84,19 @@
 </script>
 <template>
   <view class="body">
-    <!-- 第一区备忘录模块等模块1fr(左右空出放置按钮),第二区放置搜索框,第三区放置快捷方式,第四加个1fr放置备案信息-->
+    <view class="header container">
+      <image class="logo" src="@/static/img/logo.svg" />
+      <SearchWrap class='search-wrap'>
+      </SearchWrap>
+      <MySwitch class="swith-online" :checked="main.isOnline" @change="swith" checked-text='在线' unchecked-text='离线'>
+      </MySwitch>
+
+      <view url="../login/login.vue" class="set  icon" @tap='show.set.value=!show.set.value'>
+        <Options v-if="show.set.value" :options='setOptions' :showMask='true' class="set-options"
+          @cancel='show.set.value=!show.set.value' @select='setSelect' /> &#xe600;
+      </view>
+    </view>
+
     <view class="module container">
       <MyMemo v-if="show.myMemo.value" class="memo" @need-login='show.login.value=true'>
         <view class="closeBtn" @tap="show.myMemo.value=false"></view>
@@ -93,18 +111,7 @@
         <view class="closeBtn" @tap.stop="show.filePicker.value=false"></view>
       </ReadFilePicker>
     </view>
-    <TagsWrap class="tags-wrap"></TagsWrap>
-    <!-- 固定信息部分 -->
-    <SearchWrap class=' container search-wrap'>
-    </SearchWrap>
-    <image class="logo" src="@/static/img/logo.svg" />
-    <text url="../login/login.vue" class="set hover-color icon" @tap='show.set.value=!show.set.value'>&#xe600;</text>
-    <Options v-if="show.set.value" :options='setOptions' :showMask='true' class="set-options"
-      @cancel='show.set.value=!show.set.value' @select='setSelect' />
-    <view class="switch-wrap ">{{main.isOnLine?'在线':'离线'}}
-      <switch class="swith-online" color="hsl(146, 36%, 61%)" :checked="main.isOnLine" disabled @tap="swith">
-      </switch>
-    </view>
+    <TagsWrap class="tags-wrap" v-show="main.isLogin"></TagsWrap>
     <MyFooter class="footer container"></MyFooter>
   </view>
 </template>
@@ -114,7 +121,7 @@
   .body {
     height: 100vh;
     display: grid;
-    grid-template-rows: auto 20px auto 1fr;
+    grid-template-rows: 80px auto auto 1fr;
     gap: 10px;
     place-items: center;
     font-size: 16px;
@@ -148,10 +155,65 @@
     }
   }
 
+  .header {
+    display: grid;
+    grid-template-columns: auto 1fr auto 30px;
+    gap: 1vw;
+    place-items: center;
+
+    .logo,
+    .set,
+    .set-options,
+    .search-wrap,
+    .swith-online {
+      transition: var(--transition-1);
+    }
+
+    .logo,
+    .set {
+      height: 30px;
+    }
+
+    .logo {
+      object-fit: cover;
+      width: auto;
+    }
+
+    .search-wrap {
+      box-sizing: border-box;
+      width: 80%;
+      max-width: 500px;
+      z-index: 2;
+    }
+
+    .set {
+      font-size: var(--fontSize-default);
+      position: relative;
+      z-index: 8;
+      cursor: pointer;
+
+      &:hover {
+        text-shadow: 1px 1px 1px var(--color-5);
+      }
+
+      &:active {
+        font-size: .90em;
+      }
+    }
+
+
+  }
+
+  .set-options {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    font-size: 14px;
+    background-color: white;
+  }
+
   .module {
-    grid-row: 1;
     align-self: end;
-    padding-top: 80px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 30px;
@@ -186,7 +248,6 @@
   }
 
   .tags-wrap {
-    grid-row: 3;
     z-index: 3;
   }
 
@@ -198,68 +259,9 @@
     place-self: end start;
   }
 
-  // 固定组件
-  .logo,
-  .set,
-  .set-options,
-  .search-wrap,
-  .switch-wrap {
-    top: 20px;
-    transition: var(--transition-1);
-    position: absolute;
-  }
 
-  .logo,
-  .set {
-    height: 30px;
-  }
 
-  .logo {
-    object-fit: cover;
-    width: auto;
-    left: 30px;
-  }
 
-  .search-wrap {
-    width: 50%;
-    box-sizing: border-box;
-    padding: 0;
-    left: 50%;
-    transform: translateX(-45%);
-    z-index: 2;
-  }
-
-  .set {
-    right: 30px;
-    margin-right: 10px;
-    font-size: var(--fontSize-default);
-
-    &:active {
-      transform: scale(.9);
-    }
-  }
-
-  .set-options {
-    right: 60px;
-    font-size: 14px;
-    background-color: white;
-    z-index: 9;
-
-  }
-
-  .switch-wrap {
-    right: 100px;
-    display: flex;
-    align-items: center;
-
-    .swith-online {
-      transform: scale(.5) translateX(-20px);
-
-      &:deep(.uni-switch-input::before) {
-        background-color: red;
-      }
-    }
-  }
 
   @media (width<=575px) {
     .set-options {

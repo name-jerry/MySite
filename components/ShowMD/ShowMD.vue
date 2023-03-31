@@ -3,8 +3,7 @@
     <slot> </slot>
     <div class="markdown-head">
       <i class="icon" @tap="tocShow=prop.showMd?tocShow:!tocShow">&#xe677;</i>
-      <MySwitch class="switch" :checked='isCoexist' @change='switchCoexist' checked-text='双' unchecked-text='单'
-        back-text='屏'>
+      <MySwitch class="switch" :checked='isCoexist' @change='switchCoexist' checked-text='双屏' unchecked-text='单屏'>
       </MySwitch>
       <slot name="header"></slot>
     </div>

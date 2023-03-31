@@ -30,10 +30,10 @@ function useGetClientInfo(selector : string) : { clientInfo : Ref<ClientInfo> } 
   }
   onMounted(() => {
     updateClientInfo()
-    uni.onWindowResize(updateClientInfo);
+    // uni.onWindowResize(updateClientInfo);
   })
   onUnmounted(() => {
-    uni.offWindowResize(updateClientInfo)
+    // uni.offWindowResize(updateClientInfo)
   })
   return { clientInfo }
 }

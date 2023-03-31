@@ -25,6 +25,7 @@
     color: black;
     box-shadow: var(--shadow-btn);
     overflow: hidden;
+    text-shadow: initial;
 
     .option {
       display: flex;

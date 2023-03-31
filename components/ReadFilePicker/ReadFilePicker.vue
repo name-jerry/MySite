@@ -78,7 +78,7 @@
           content: e.target.result as string
         }
         // 在线是同步到网络
-        if (main.isOnLine) {
+        if (main.isOnline) {
           let res = await curdArt("add", a)
           a._id = res.id;
         }

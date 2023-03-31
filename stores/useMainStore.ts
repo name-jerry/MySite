@@ -11,7 +11,7 @@ import { checkLogin } from "@/utils/checkLogin"
 const useMainStore = defineStore('main', () => {
   let isLogin = ref<boolean>(checkLogin());
   let artList = ref<Article[]>([])
-  let isOnLine = ref<boolean>(false)
+  let isOnline = ref<boolean>(false)
   // 退出时清空数据,选择退出时才清空
   // watch(isLogin, () => {
   //   if (!isLogin.value) {
@@ -21,7 +21,7 @@ const useMainStore = defineStore('main', () => {
   return {
     isLogin,
     artList,
-    isOnLine,
+    isOnline,
   }
 });
 export default useMainStore
