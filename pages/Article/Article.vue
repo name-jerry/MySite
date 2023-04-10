@@ -11,7 +11,7 @@
           <button class="updateBtn" v-show="!isCoexist" @tap="switchView">{{showMd?'预览':'编辑'}}</button>
           <button class="saveBtn " @tap="save"
             v-show="showSave||showDownload">{{showSave?'保存':showDownload?'下载':'保存'}}</button>
-          <button class="recoverBtn " @tap="recover" v-show="showSave&&!showMd">恢复</button>
+          <button class="recoverBtn " @tap="recover" v-show="showSave">恢复</button>
 
           <picker v-if='main.artList[0]' class="pickerBtn" mode="selector" :range="main.artList" range-key="title"
             :value='currentArtIndex' @change="currentArtIndex=$event.detail.value">
@@ -42,7 +42,7 @@
   const currentArt = computed<Article>(() => main.artList[currentArtIndex.value]);
   /**切换视图*/
   const showMd = ref<Boolean>(false);
-  const isCoexist = ref<boolean>(false);
+  const isCoexist = ref<boolean>(true);
   const showSave = ref<Boolean>(false);
   const showDownload = computed<boolean>(() => main.artList[currentArtIndex.value].updateCount);
   const keydownFns = new Map()
@@ -126,8 +126,12 @@
 
   async function updateMdTextByIndex() {
     let { title, content } = main.artList[currentArtIndex.value]
-    let a = history.state.current.toString().replace(/=.+$/, '=' + title)
-    history.replaceState(history.state, null, a);
+    // 获取url的检索字段
+    const param = new URLSearchParams(location.search)
+    // 设置title字段
+    param.set('title', title)
+    // 加入一条历史记录,第一个参数对象可通过新记录的history.state访问到,第二个暂时无用,第三个是用于确定新的url,?开头则只替代原来的query值,非问号开头,相对路径时(非https开头),会替代最后最后一个路径值,绝对路径时,取代全部值
+    history.pushState({ index: title }, null, "?" + param);
     mdText.value = content
   }
   function print() {

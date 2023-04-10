@@ -30,7 +30,7 @@ type Option = {
   key ?: string,
   fontIcon ?: string,
   title : string
-} | string;
+};
 
 interface ClientInfo {
   clientLeft : number;

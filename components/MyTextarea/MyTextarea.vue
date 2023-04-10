@@ -57,6 +57,7 @@
     e.preventDefault();
     keydownFns.get(c)(e, area)
   }
+  /**keys第二个值有值时在选区两侧插入keys数组中得两个字符串,第二个值无值时将替代选区内容*/
   function doubleKey(e : KeyboardEvent, area : HTMLTextAreaElement, keys : string[]) {
     let start = area.selectionStart;
     let end = area.selectionEnd;
@@ -64,16 +65,19 @@
     let str1 = text.slice(0, start)
     let str2 = text.slice(start, end)
     let str3 = text.slice(end)
-    let position;
+    let position : number;
     if (keys[1]) {
-      area.value = str1 + keys[0] + str2 + keys[1] + str3
+      text = str1 + keys[0] + str2 + keys[1] + str3
       position = end + 2;
     } else {
-      area.value = str1 + keys[0] + str3
+      text = str1 + keys[0] + str3
       position = start + 1
     }
-    area.selectionEnd = position
-
+    // 不设置异步会出现继续键入原值得问题
+    setTimeout(() => {
+      area.value = text
+      area.selectionEnd = position
+    })
   }
   /**利用div自动增高的特点，为其赋值，areatext通过css设置成同div高度*/
   function autoHeight() {

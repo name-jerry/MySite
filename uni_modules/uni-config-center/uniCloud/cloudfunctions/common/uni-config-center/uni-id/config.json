@@ -35,7 +35,7 @@
     }
   },
   "web": {
-    "tokenExpiresIn": 7200,
+    "tokenExpiresIn": 86400,
     "tokenExpiresThreshold": 3600,
     "oauth": {
       "weixin-h5": {

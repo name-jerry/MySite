@@ -33,7 +33,7 @@
     (e : 'update', mdText : string) : void,
     (e : 'updateCoexist', isCoexist : boolean) : void
   }>()
-  let isCoexist = ref<boolean>(false)
+  let isCoexist = ref<boolean>(true)
   /**主体的ref对象*/
   let markdownBody = ref()
   /**md文档的html格式*/
@@ -598,7 +598,7 @@
       pre {
         padding: $fontSize-default;
         overflow: auto;
-        font-size: .85em;
+        font-size: 1em;
         line-height: 1.45;
         background-color: $color-bg-pre;
         border-radius: $borderRadius-default;

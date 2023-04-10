@@ -1,9 +1,10 @@
 <script setup lang="ts">
-  import { reactive, onMounted, watch } from "vue";
+  import { reactive, onMounted, watch, watchEffect, ref } from "vue";
   import { onLoad } from '@dcloudio/uni-app';
   import type { Option } from '@/type';
   import useMainStore from "@/stores/useMainStore"
   let main = useMainStore();
+  const moduleShowKey = 'moduleShowKey'
   // 登录判断
   // 跳转时带的参数
   type Query = {
@@ -11,15 +12,20 @@
     uniIdRedirectUrl ?: String
   }
   let query : Query;
-
   // 插入模块
-  let show = reactive({
+  let show = ref<{ [key : string] : { value : boolean, lable : string } }>({
     myMemo: { value: true, lable: "计划表" },
-    filePicker: { value: false, lable: "上传文章" },
+    filePicker: { value: true, lable: "上传文章" },
     login: { value: false, lable: "登录" },
-    swipe: { value: true, lable: "轮播图" },
+    swipe: { value: false, lable: "轮播图" },
     set: { value: false, lable: "设置" },
   })
+  function initShowByStorage() {
+    // 登录状态时
+    let l = uni.getStorageSync(moduleShowKey);
+    // 本地有值时
+    if (l?.set) return show.value = l;
+  }
   // 设置
   let setOptions = reactive<Option[]>([])
   function swith() {
@@ -29,7 +35,7 @@
     })
   }
   function initSet() {
-    for (let [k, v] of Object.entries(show)) {
+    for (let [k, v] of Object.entries(show.value)) {
       if (k == 'set') continue;
       setOptions.push({ key: k, title: v.lable })
     }
@@ -37,7 +43,7 @@
   }
 
   function setSelect(option : Option) : void {
-    show.set.value = false;
+    show.value.set.value = false;
     let k = option.key
     if (!k) {
       main.isLogin = false;
@@ -47,9 +53,9 @@
         title: '请先登录',
         icon: 'error'
       });
-      show.login.value = true
+      show.value.login.value = true
     } else {
-      show[k].value = true;
+      show.value[k].value = true;
     }
   }
 
@@ -58,17 +64,19 @@
     q as Query;
     if (q!.needLogin) {
       query = q!;
-      show.login.value = true
+      show.value.login.value = true
     }
   })
 
   // =========挂载卸载============
   onMounted(() => {
+    initShowByStorage()
     initSet()
+    watchEffect(() => uni.setStorageSync(moduleShowKey, show.value))
     // 防刷新
     watch(() => main.isLogin, async () => {
       const l = main.isLogin
-      show.login.value = !l;
+      show.value.login.value = !l;
       if (l && query && query.uniIdRedirectUrl) {
         setTimeout(() => uni.showToast({
           title: '返回之前访问页面',
@@ -183,7 +191,7 @@
       box-sizing: border-box;
       width: 80%;
       max-width: 500px;
-      z-index: 2;
+      z-index: 4;
     }
 
     .set {

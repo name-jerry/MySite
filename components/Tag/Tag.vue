@@ -55,6 +55,7 @@
     uni.showModal({
       editable: true,
       title: "请输入名字",
+      content: prop.tag.title,
       success: async (e) => {
         if (e.confirm) {
           let a : Tag = { ...prop.tag, title: e.content };
