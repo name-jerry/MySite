@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
   import { SHA1 } from 'crypto-js';
-  import { ref, reactive, onMounted, onUnmounted } from "vue";
+  import { ref, reactive, onMounted, nextTick } from "vue";
   import cf from '@/utils/cf';
   import checkPwd from '@/utils/checkPwd';
   import useMainStore from "@/stores/useMainStore"
@@ -54,10 +54,10 @@
     let pwd = SHA1(form.pwd1).toString();
     let res = await cf({ type: 'login', acc: form.acc, pwd })
     if (res.success) {
-      main.online = res.isOnline
       uni.showToast({
         title: '登录成功',
       })
+      main.online = res.isOnline
       main.isLogin = true;
     }
   }

@@ -12,12 +12,12 @@ export function useRefresh<T>(curd : CURDFn, key : string,) : { list : Ref<T[]> 
   let list : Ref<T[]> = ref([]);
   let stopUpdateStorage : WatchStopHandle;
   updateStorageByList();
-  watch(() => main.isLogin, updateWithLoginStatus, { immediate: true })
+  watch(() => main.isLogin, getListByLoginStatus, { immediate: true })
   return { list }
   function updateStorageByList() {
     stopUpdateStorage = watch(list, () => { uni.setStorageSync(key, JSON.stringify(list.value)) }, { deep: true })
   }
-  async function updateWithLoginStatus() {
+  async function getListByLoginStatus() {
     // 未登录状态时清空列表
     if (!main.isLogin) {
       typeof stopUpdateStorage == 'function' && stopUpdateStorage()
