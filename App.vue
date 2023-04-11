@@ -13,8 +13,6 @@
   let main = useMainStore();
   main.artList = list
 
-
-
   onLaunch(() => {
     console.log("App onLaunch");
     // #ifndef H5 || APP-PLUS

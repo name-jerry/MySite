@@ -29,10 +29,7 @@
   // 设置
   let setOptions = reactive<Option[]>([])
   function swith() {
-    uni.showModal({
-      title: '提示',
-      content: '读写资源有限,暂不开放读写功能'
-    })
+    main.switchOnlineStatus()
   }
   function initSet() {
     for (let [k, v] of Object.entries(show.value)) {

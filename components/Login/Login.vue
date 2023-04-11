@@ -54,6 +54,7 @@
     let pwd = SHA1(form.pwd1).toString();
     let res = await cf({ type: 'login', acc: form.acc, pwd })
     if (res.success) {
+      main.online = res.isOnline
       uni.showToast({
         title: '登录成功',
       })

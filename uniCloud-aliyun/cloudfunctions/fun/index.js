@@ -6,6 +6,7 @@ let path = require('path')
 let p = path.join(__dirname + '/apis')
 let apis = fs.readdirSync(p);
 let funs = new Map()
+let env = require('./env')
 // 加载模块
 apis.map(item => {
   let type = item.replace('.js', '')
@@ -33,6 +34,7 @@ exports.main = async (event, context) => {
     try {
       // 传入原有的两个属性,dbJQL操作对象,token中含有的角色信息,uni-id-common模块
       let res = await funs.get(type)(event, context, dbJQL, { uid, role, permission }, uniIDIns)
+      if (type == "login") res.isOnline = env.online ? true : false;
       // 此处利用用展开符的特性,遇到登录接口等返回的res中含有token属性将覆盖此处的token
       return { success: true, errCode: 0, token, ...res }
     } catch (e) {

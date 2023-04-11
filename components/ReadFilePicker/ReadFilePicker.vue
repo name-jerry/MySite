@@ -79,6 +79,7 @@
         }
         // 在线是同步到网络
         if (main.isOnline) {
+          delete a._id
           let res = await curdArt("add", a)
           a._id = res.id;
         }
