@@ -1,11 +1,11 @@
 import useMainStore from "@/stores/useMainStore"
 type CURD = "get" | "add" | "remove" | "update"
-type CURDFn = (() => void) | ((type ?: CURD, item ?: T) => Promise<any>)
+type CURDFn = ((type ?: CURD, item ?: T) => Promise<any>)
 /**
- *泛型为表记录的类型,查询对应的表名,如果main.isOnline为false返回空函数,否则返回一个async函数
+ *泛型为表记录的类型,查询对应的表名,返回一个async函数
  * @param{string} collectionName - 表名
- * @param{boolean} [isOnline=false] - 是否临时获得在线功能,无视main.isOnline
- * @return{promise} 返回一个async函数或空函数
+ * @param{boolean} [isOnline=false] - 是否临时获得在线功能,无视main.isOnline,
+ * @return{promise} 返回一个async函数,如果isOnline和main.isOnline都为false时第一行就会被return
  */
 function getCurd<T>(collectionName : string, isOnline : boolean = false) : CURDFn {
   let main = useMainStore();
@@ -25,14 +25,13 @@ function getCurd<T>(collectionName : string, isOnline : boolean = false) : CURDF
     delete c._id;
     tdb.doc(item._id).update(c);
   })
-  // 如果不在线就返回一个空对象
-  if (!main.isOnline && !isOnline) return () => { };
   /**
    * @param{string} [type="get"] - "get" | "add" | "remove" | "update";
    * @param{any} [item] - 数据对象可选,删除,增加或修改时必填
    * @return{promise} 返回一个Promise;
    */
   return async function curd(type : CURD = "get", item ?: T) : Promise<any> {
+    if (!main.isOnline && !isOnline) return;
     let { uid, tokenExpired } = uniCloud.getCurrentUserInfo();
     let islogin = !tokenExpired || tokenExpired < Date.now() ? false : true;
     if (!islogin) return main.isLogin = false;

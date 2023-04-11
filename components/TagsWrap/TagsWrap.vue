@@ -123,15 +123,16 @@
 
   async function newFile() {
     let a: Article = {
-      _id: 'offLine',
       sub: 'newFile.md' + main.artList.length,
       title: 'newFile.md',
       content: ''
     }
     // 在线是同步到网络
-    if (main.isOnLine) {
+    if (main.isOnline) {
       let res = await curdArt("add", a)
       a._id = res.id;
+    } else {
+      a._id = 'offLine';
     }
     main.artList.push(a);
   }
@@ -152,20 +153,25 @@
     }
   }
 
-  function update(a: Article) {
-    curdArt("update", a);
+  function update(tag: Tag) {
     const i: number = main.artList.findIndex((v) => {
-      return v._id == "offLine" ? v.sub == a.sub : v._id == a._id
+      return v._id == "offLine" ? v.sub == tag.sub : v._id == tag._id
     })
-    if (~i) main.artList[i] = { ...main.artList[i], ...a };
+    if (!~i) throw new Error('本地存储中未找到这篇文章');
+    const a = main.artList[i]
+    a.title = tag.title
+    curdArt("update", a);
   }
 
-  function remove(a: Article) {
-    curdArt('remove', a)
+  function remove(tag: Tag) {
     const i: number = main.artList.findIndex((v) => {
-      return v._id == "offLine" ? v.title == a.title : v._id == a._id
+      return v._id == "offLine" ? v.sub == tag.sub : v._id == tag._id
     })
-    if (~i) main.artList.splice(i, 1);
+    if (!~i) throw new Error('本地存储中未找到这篇文章');
+    const a = main.artList[i]
+    a.title = tag.title
+    curdArt('remove', a)
+    main.artList.splice(i, 1);
   }
 </script>
 

@@ -10,7 +10,7 @@
           <navigator class="back" open-type='redirect' url="/pages/Home/Home">首页</navigator>
           <button class="updateBtn" v-show="!isCoexist" @tap="switchView">{{showMd?'预览':'编辑'}}</button>
           <button class="saveBtn " @tap="save"
-            v-show="showSave||showDownload">{{showSave?'保存':showDownload?'下载':'保存'}}</button>
+            v-show="showSave||showDownload">{{showSave?(main.isOnline?'上传':'保存'):showDownload?'下载':'保存'}}</button>
           <button class="recoverBtn " @tap="recover" v-show="showSave">恢复</button>
 
           <picker v-if='main.artList[0]' class="pickerBtn" mode="selector" :range="main.artList" range-key="title"
@@ -82,19 +82,14 @@
   async function save() {
     let a = currentArt.value
     a.content = mdText.value;
-    if (main.isOnLine) {
-      curdArt("update", a)
+    if (showSave.value) {
+      main.artList[currentArtIndex.value].content = a.content
+      if (main.isOnline) curdArt("update", a);
       showSave.value = false
-    } else {
-      if (showSave.value) {
-        main.artList[currentArtIndex.value].content = a.content
-        showSave.value = false
-        main.artList[currentArtIndex.value].updateCount = true
-        return
-      }
-
-      downloadArt(a)
+      main.artList[currentArtIndex.value].updateCount = true
+      return
     }
+    downloadArt(a)
     main.artList[currentArtIndex.value].updateCount = false
 
   }
