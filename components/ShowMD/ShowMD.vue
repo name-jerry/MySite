@@ -334,6 +334,7 @@
         border-radius: $borderRadius-default;
         box-shadow: 0 0 10px gray;
         display: v-bind(tocStyle);
+        text-align: start;
         z-index: 5;
 
         &>ul {
